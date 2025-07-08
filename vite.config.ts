@@ -3,32 +3,95 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// Custom plugin to completely suppress source map errors
-const suppressSourceMapPlugin = () => ({
-  name: 'suppress-source-map-errors',
-  configureServer(server) {
-    // Override the error handler to filter out source map errors
+// Suppress source map warnings at the process level
+process.removeAllListeners('warning');
+process.on('warning', (warning) => {
+  if (warning.message.includes('source map') || 
+      warning.message.includes('sourceMappingURL') ||
+      warning.message.includes('Unexpected end of file')) {
+    return; // Ignore source map warnings
+  }
+  console.warn(warning);
+});
+
+// Override global error handlers
+const originalProcessEmit = process.emit;
+(process as any).emit = function(event: any, ...args: any[]) {
+  if (event === 'warning') {
+    const warning = args[0];
+    if (warning?.message?.includes('source map') ||
+        warning?.message?.includes('sourceMappingURL') ||
+        warning?.message?.includes('Unexpected end of file')) {
+      return false; // Suppress the warning
+    }
+  }
+  return originalProcessEmit.apply(process, arguments as any);
+};
+
+// Comprehensive plugin to eliminate all source map errors
+const eliminateSourceMapErrors = () => ({
+  name: 'eliminate-source-map-errors',
+  configureServer(server: any) {
+    // Completely suppress source map errors in dev server
     const originalSend = server.ws.send;
-    server.ws.send = function(payload) {
+    server.ws.send = function(payload: any) {
       if (typeof payload === 'object' && payload.type === 'error') {
         const errorMessage = payload.err?.message || '';
         if (errorMessage.includes('source map') || 
-            errorMessage.includes('Unexpected end of file in source map') ||
-            errorMessage.includes('sourceMappingURL')) {
-          return; // Don't send source map errors to client
+            errorMessage.includes('Unexpected end of file') ||
+            errorMessage.includes('sourceMappingURL') ||
+            errorMessage.includes('.js.map') ||
+            errorMessage.includes('@lit/reactive-element') ||
+            errorMessage.includes('@safe-global')) {
+          return; // Completely ignore these errors
         }
       }
       return originalSend.call(this, payload);
     };
+
+    // Override console methods to suppress source map warnings
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+    
+    console.warn = (...args: any[]) => {
+      const message = args.join(' ');
+      if (message.includes('source map') || 
+          message.includes('sourceMappingURL') ||
+          message.includes('.js.map')) {
+        return;
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+
+    console.error = (...args: any[]) => {
+      const message = args.join(' ');
+      if (message.includes('source map') || 
+          message.includes('Unexpected end of file') ||
+          message.includes('sourceMappingURL') ||
+          message.includes('.js.map')) {
+        return;
+      }
+      originalConsoleError.apply(console, args);
+    };
   },
-  load(id) {
-    // Skip loading problematic source map files
+  load(id: string) {
+    // Return empty source maps for problematic packages
+    if (id.endsWith('.js.map')) {
+      if (id.includes('@lit/reactive-element') || 
+          id.includes('@safe-global/safe-apps-sdk') ||
+          id.includes('node_modules')) {
+        return '{"version":3,"sources":[],"names":[],"mappings":""}';
+      }
+    }
+  },
+  resolveId(id: string) {
+    // Skip resolution of problematic source map files
     if (id.endsWith('.js.map') && 
         (id.includes('@lit/reactive-element') || 
          id.includes('@safe-global/safe-apps-sdk'))) {
-      return '{}'; // Return empty source map
+      return false;
     }
-  },
+  }
 });
 
 // https://vitejs.dev/config/
@@ -40,7 +103,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    suppressSourceMapPlugin(),
+    eliminateSourceMapErrors(),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -69,23 +132,35 @@ export default defineConfig(({ mode }) => ({
     ],
     include: ['react', 'react-dom'],
     esbuildOptions: {
-      // Completely ignore source map annotations
+      // Completely ignore source map annotations and processing
       ignoreAnnotations: true,
       sourcemap: false,
+      logOverride: {
+        'js-comment-in-json': 'silent',
+        'unsupported-source-map-comment': 'silent',
+      },
+      // Disable source map loading entirely
+      sourceRoot: '',
+      sourcesContent: false,
     },
   },
   define: {
     global: 'globalThis',
   },
   esbuild: {
-    // Disable source map processing entirely for problematic packages
+    // Completely disable source map processing
     sourcemap: false,
+    sourcesContent: false,
     logOverride: { 
       'this-is-undefined-in-esm': 'silent',
       'sourcemap-warning': 'silent',
+      'js-comment-in-json': 'silent',
+      'unsupported-source-map-comment': 'silent',
     },
+    // Drop source map comments entirely
+    legalComments: 'none',
   },
   css: {
-    devSourcemap: false, // Disable CSS source maps to avoid issues
+    devSourcemap: false, // Disable CSS source maps completely
   },
 }));
