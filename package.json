@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "postinstall": "npm run clean:sourcemaps",
-    "clean:sourcemaps": "node clean-sourcemaps.js",
+    "clean:sourcemaps": "node clean-sourcemaps.cjs",
     "contracts:install": "cd contracts && npm install",
     "contracts:compile": "cd contracts && npm run compile",
     "contracts:test": "cd contracts && npm run test",
