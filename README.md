@@ -177,23 +177,33 @@ The application will be available at `http://localhost:5173`
 
 ## 🌐 Deployment
 
-### Option 1: Lovable Platform (Recommended)
-1. Visit the [Lovable Project](https://lovable.dev/projects/203cd2bc-a711-46fb-bd03-d08fb53293cf)
-2. Click **Share → Publish**
-3. Your app will be deployed automatically
+### Option 1: Vercel Deployment (Recommended)
 
-### Option 2: Custom Deployment
-1. Build the project: `npm run build`
-2. Deploy the `dist/` folder to your hosting provider
-3. Configure your domain (if applicable)
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Visit [Vercel](https://vercel.com) and sign in
+3. Click **New Project** and import your repository
+4. Configure build settings:
+   - Framework Preset: **Vite**
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+5. Click **Deploy**
+
+### Option 2: Vercel CLI
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Build the project: `npm run build`
+3. Deploy: `vercel --prod`
 
 ### Custom Domain Setup
-To connect a custom domain via Lovable:
-1. Navigate to **Project > Settings > Domains**
-2. Click **Connect Domain**
-3. Follow the setup instructions
 
-📚 [Custom Domain Guide](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+To connect a custom domain via Vercel:
+
+1. Navigate to your project dashboard on Vercel
+2. Go to **Settings → Domains**
+3. Add your custom domain
+4. Configure DNS records as instructed
+
+📚 [Vercel Custom Domain Guide](https://vercel.com/docs/concepts/projects/custom-domains)
 
 ## 📁 Project Structure
 
@@ -256,9 +266,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <p>Built with ❤️ by the SynthaMint team</p>
+  <p>Built with ❤️ by [Koustav Singh](https://koustavx08.vercel.app)</p>
   <p>
-    <a href="https://lovable.dev/projects/203cd2bc-a711-46fb-bd03-d08fb53293cf">View Project</a> •
+    <a href="https://github.com/koustavx08/synthamint-platform">View Project</a> •
     <a href="#contributing">Contribute</a> •
     <a href="mailto:support@synthamint.com">Support</a>
   </p>
