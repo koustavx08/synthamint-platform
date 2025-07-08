@@ -192,11 +192,24 @@ const CollabMode = () => {
 
   if (!address) {
     return (
-      <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <div className="text-center">
-          <Users className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-          <h3 className="text-xl font-semibold text-white mb-2">Collab Mode</h3>
-          <p className="text-gray-400">Connect your wallet to start collaborating</p>
+      <Card className="overflow-hidden border-0 shadow-xl bg-white">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+          <div className="text-center">
+            <Users className="w-12 h-12 mx-auto mb-4 text-white" />
+            <h3 className="text-2xl font-bold text-white">Collaborative Art</h3>
+            <p className="text-purple-100 mt-1">Create NFTs together with friends</p>
+          </div>
+        </div>
+        <div className="p-6 text-center">
+          <div className="max-w-sm mx-auto">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-purple-600" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Connect Your Wallet</h4>
+            <p className="text-gray-600">
+              Connect your wallet to start creating collaborative artwork with other artists.
+            </p>
+          </div>
         </div>
       </Card>
     );
@@ -204,55 +217,62 @@ const CollabMode = () => {
 
   if (mode === 'menu') {
     return (
-      <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <div className="text-center mb-6">
-          <Users className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-          <h3 className="text-xl font-semibold text-white mb-2">Collab Mode</h3>
-          <p className="text-gray-400">Create or join a collaborative NFT session</p>
+      <Card className="overflow-hidden border-0 shadow-xl bg-white">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+          <div className="text-center">
+            <Users className="w-12 h-12 mx-auto mb-4 text-white" />
+            <h3 className="text-2xl font-bold text-white">Collaborative Art</h3>
+            <p className="text-purple-100 mt-1">Create NFTs together with other artists</p>
+          </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="p-6 space-y-6">
           <Button
             onClick={createSession}
             disabled={isConnecting}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            size="lg"
+            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
             {isConnecting ? (
               <>
-                <Loader className="w-4 h-4 mr-2 animate-spin" />
-                Connecting...
+                <Loader className="w-5 h-5 mr-3 animate-spin" />
+                Creating session...
               </>
             ) : (
               <>
-                <Users className="w-4 h-4 mr-2" />
-                Start New Session
+                <Users className="w-5 h-5 mr-3" />
+                Start New Collaboration
               </>
             )}
           </Button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-600" />
+              <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-slate-800 px-2 text-gray-400">Or</span>
+              <span className="bg-white px-3 text-gray-500 font-medium">Or join existing</span>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              Session ID
+            </label>
             <Input
-              placeholder="Enter session ID to join"
+              placeholder="Enter session ID to join collaboration"
               value={joinSessionId}
               onChange={(e) => setJoinSessionId(e.target.value)}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400"
+              className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
             />
             <Button
               onClick={joinSession}
               disabled={isConnecting || !joinSessionId.trim()}
               variant="outline"
-              className="w-full border-slate-600 text-gray-300 hover:text-white"
+              size="lg"
+              className="w-full h-12 border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 font-semibold"
             >
-              Join Session
+              Join Collaboration
             </Button>
           </div>
         </div>
@@ -261,71 +281,92 @@ const CollabMode = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Session Info */}
-      <Card className="p-4 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="font-semibold text-white">
-              {isHost ? 'Hosting Session' : 'Joined Session'}
-            </h4>
-            <p className="text-sm text-gray-400">
-              Session ID: {session?.id}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${
-              session?.guest ? 'bg-green-400' : 'bg-yellow-400'
-            }`} />
-            <span className="text-sm text-gray-300">
-              {session?.guest ? '2/2 Connected' : '1/2 Waiting'}
-            </span>
+      <Card className="overflow-hidden border-0 shadow-xl bg-white">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold text-white text-lg">
+                {isHost ? 'Hosting Collaboration' : 'Joined Collaboration'}
+              </h4>
+              <p className="text-emerald-100 text-sm">
+                Session ID: {session?.id}
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className={`w-3 h-3 rounded-full ${
+                session?.guest ? 'bg-green-300' : 'bg-yellow-300'
+              }`} />
+              <span className="text-emerald-100 text-sm font-medium">
+                {session?.guest ? '2/2 Connected' : '1/2 Waiting'}
+              </span>
+            </div>
           </div>
         </div>
         
         {isHost && sessionLink && (
-          <div className="mt-3 flex items-center space-x-2">
-            <Input
-              value={sessionLink}
-              readOnly
-              className="bg-slate-700/50 border-slate-600 text-white text-sm"
-            />
-            <Button
-              onClick={copySessionLink}
-              size="sm"
-              variant="outline"
-              className="border-slate-600 text-gray-300 hover:text-white"
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
+          <div className="p-4 bg-gray-50">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Share this link with your collaborator
+            </label>
+            <div className="flex items-center space-x-2">
+              <Input
+                value={sessionLink}
+                readOnly
+                className="border-gray-200 text-gray-700 bg-white text-sm"
+              />
+              <Button
+                onClick={copySessionLink}
+                size="sm"
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         )}
       </Card>
 
       {/* Prompting Phase */}
       {session?.status === 'waiting' || session?.status === 'prompting' ? (
-        <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <h4 className="text-lg font-semibold text-white mb-4">Enter Your Prompt</h4>
+        <Card className="overflow-hidden border-0 shadow-xl bg-white">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+            <h4 className="text-2xl font-bold text-white">Creative Collaboration</h4>
+            <p className="text-blue-100 mt-1">Share your creative vision</p>
+          </div>
           
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Describe your creative vision..."
-              value={myPrompt}
-              onChange={(e) => updatePrompt(e.target.value)}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 min-h-[100px]"
-            />
+          <div className="p-6 space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Your Creative Prompt
+              </label>
+              <Textarea
+                placeholder="Describe your artistic vision in detail..."
+                value={myPrompt}
+                onChange={(e) => updatePrompt(e.target.value)}
+                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-[120px]"
+              />
+            </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-400 mb-1">Host Prompt:</p>
-                <p className="text-white bg-slate-700/30 p-2 rounded">
-                  {session?.hostPrompt || 'No prompt yet...'}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="font-semibold text-gray-700 mb-2 flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                  Host Prompt
+                </p>
+                <p className="text-gray-600 text-sm bg-white p-3 rounded border">
+                  {session?.hostPrompt || 'Waiting for host prompt...'}
                 </p>
               </div>
-              <div>
-                <p className="text-gray-400 mb-1">Guest Prompt:</p>
-                <p className="text-white bg-slate-700/30 p-2 rounded">
-                  {session?.guestPrompt || 'No prompt yet...'}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="font-semibold text-gray-700 mb-2 flex items-center">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                  Guest Prompt
+                </p>
+                <p className="text-gray-600 text-sm bg-white p-3 rounded border">
+                  {session?.guestPrompt || 'Waiting for guest prompt...'}
                 </p>
               </div>
             </div>
@@ -334,15 +375,16 @@ const CollabMode = () => {
               <Button
                 onClick={() => generateCollabImage(session)}
                 disabled={isGenerating}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                size="lg"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {isGenerating ? (
                   <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Generating Collaborative Art...
+                    <Loader className="w-5 h-5 mr-3 animate-spin" />
+                    Creating collaborative masterpiece...
                   </>
                 ) : (
-                  'Generate Collaborative Image'
+                  'Generate Collaborative Artwork'
                 )}
               </Button>
             )}
@@ -352,61 +394,76 @@ const CollabMode = () => {
 
       {/* Image Approval Phase */}
       {session?.generatedImage && session?.status === 'approving' && (
-        <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <h4 className="text-lg font-semibold text-white mb-4">Approve Collaborative Art</h4>
+        <Card className="overflow-hidden border-0 shadow-xl bg-white">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6">
+            <h4 className="text-2xl font-bold text-white">Review & Approve</h4>
+            <p className="text-amber-100 mt-1">Both collaborators must approve to proceed</p>
+          </div>
           
-          <div className="space-y-4">
-            <div className="relative group">
-              <img
-                src={session.generatedImage}
-                alt="Collaborative AI art"
-                className="w-full max-w-md mx-auto rounded-lg shadow-2xl"
-              />
+          <div className="p-6 space-y-6">
+            <div className="flex justify-center">
+              <div className="relative group max-w-lg">
+                <img
+                  src={session.generatedImage}
+                  alt="Collaborative AI artwork"
+                  className="w-full rounded-xl shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
             </div>
 
-            <div className="flex items-center justify-center space-x-4">
-              <div className="text-center">
-                <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                  session.hostApproved ? 'bg-green-400' : 'bg-gray-600'
-                }`} />
-                <p className="text-xs text-gray-400">Host</p>
-              </div>
-              <div className="text-center">
-                <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                  session.guestApproved ? 'bg-green-400' : 'bg-gray-600'
-                }`} />
-                <p className="text-xs text-gray-400">Guest</p>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h5 className="font-semibold text-gray-700 mb-3 text-center">Approval Status</h5>
+              <div className="flex items-center justify-center space-x-8">
+                <div className="text-center">
+                  <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+                    session.hostApproved ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                  <p className="text-sm font-medium text-gray-700">Host</p>
+                  {session.hostApproved && <p className="text-xs text-green-600">Approved</p>}
+                </div>
+                <div className="text-center">
+                  <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+                    session.guestApproved ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                  <p className="text-sm font-medium text-gray-700">Guest</p>
+                  {session.guestApproved && <p className="text-xs text-green-600">Approved</p>}
+                </div>
               </div>
             </div>
 
             {!session[mode === 'host' ? 'hostApproved' : 'guestApproved'] && (
-              <div className="flex space-x-3">
+              <div className="flex space-x-4">
                 <Button
                   onClick={() => handleApproval(false)}
                   variant="outline"
-                  className="flex-1 border-red-600 text-red-400 hover:bg-red-600/10"
+                  size="lg"
+                  className="flex-1 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
                 >
-                  <X className="w-4 h-4 mr-2" />
-                  Reject
+                  <X className="w-5 h-5 mr-2" />
+                  Reject Artwork
                 </Button>
                 <Button
                   onClick={() => handleApproval(true)}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  size="lg"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold"
                 >
-                  <Check className="w-4 h-4 mr-2" />
-                  Approve
+                  <Check className="w-5 h-5 mr-2" />
+                  Approve Artwork
                 </Button>
               </div>
             )}
 
             {bothApproved && (
-              <CollabNFTMinter
-                imageUrl={session.generatedImage}
-                hostPrompt={session.hostPrompt!}
-                guestPrompt={session.guestPrompt!}
-                hostAddress={session.host}
-                guestAddress={session.guest!}
-              />
+              <div className="bg-green-50 rounded-xl p-1">
+                <CollabNFTMinter
+                  imageUrl={session.generatedImage}
+                  hostPrompt={session.hostPrompt!}
+                  guestPrompt={session.guestPrompt!}
+                  hostAddress={session.host}
+                  guestAddress={session.guest!}
+                />
+              </div>
             )}
           </div>
         </Card>

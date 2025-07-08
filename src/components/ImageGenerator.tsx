@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAccount } from 'wagmi';
-import { Loader, Plus, Sparkles } from 'lucide-react';
+import { Loader, Plus, Sparkles, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import NFTMinter from './NFTMinter';
 import { aiImageService } from '@/services/aiImageService';
@@ -90,85 +90,126 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-white">Generate AI Art</h3>
-          {availableServices.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-green-400">
-              <Sparkles className="w-4 h-4" />
-              <span>{availableServices.join(', ')} Ready</span>
+    <div className="space-y-8">
+      {/* AI Image Generation Card */}
+      <Card className="overflow-hidden border-0 shadow-xl bg-white">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-white">AI Art Generator</h3>
+              <p className="text-blue-100 mt-1">Create unique artwork with artificial intelligence</p>
             </div>
-          )}
+            {availableServices.length > 0 && (
+              <div className="flex items-center gap-2 bg-green-500/20 text-green-100 px-3 py-1 rounded-full">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">{availableServices.join(', ')} Ready</span>
+              </div>
+            )}
+          </div>
         </div>
         
-        <div className="space-y-4">
+        <div className="p-6 space-y-6">
           {availableServices.length === 0 && (
-            <div className="p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-              <p className="text-yellow-300 text-sm">
-                ⚠️ No AI services configured. Add your API keys to .env.local:
-              </p>
-              <ul className="text-yellow-200 text-xs mt-1 ml-4">
-                <li>• VITE_OPENAI_API_KEY for DALL-E</li>
-                <li>• VITE_STABILITY_AI_API_KEY for Stable Diffusion</li>
-              </ul>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 text-sm font-semibold">!</span>
+                </div>
+                <div>
+                  <h4 className="text-amber-800 font-semibold text-sm mb-1">Configuration Required</h4>
+                  <p className="text-amber-700 text-sm mb-2">
+                    Add your AI service API keys to enable image generation:
+                  </p>
+                  <ul className="text-amber-600 text-sm space-y-1">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
+                      <code className="bg-amber-100 px-1 rounded">VITE_OPENAI_API_KEY</code> for DALL-E
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
+                      <code className="bg-amber-100 px-1 rounded">VITE_STABILITY_AI_API_KEY</code> for Stable Diffusion
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
           
-          <div>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              Describe your artwork
+            </label>
             <Input
-              placeholder="Enter your creative prompt (e.g., 'A futuristic cityscape at sunset')"
+              placeholder="A majestic dragon soaring through a starlit sky with ethereal clouds..."
               value={imagePrompt}
               onChange={(e) => setImagePrompt(e.target.value)}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400"
+              className="h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               disabled={isGenerating}
             />
+            <p className="text-sm text-gray-500">
+              Be descriptive and creative - the more detail, the better your AI artwork will be!
+            </p>
           </div>
           
           <Button
             onClick={generateImage}
             disabled={isGenerating || !imagePrompt.trim() || availableServices.length === 0}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+            size="lg"
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
             {isGenerating ? (
               <>
-                <Loader className="w-4 h-4 mr-2 animate-spin" />
-                Generating with AI...
+                <Loader className="w-5 h-5 mr-3 animate-spin" />
+                Creating your masterpiece...
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate AI Image
+                <Sparkles className="w-5 h-5 mr-3" />
+                Generate AI Artwork
               </>
             )}
           </Button>
         </div>
       </Card>
 
+      {/* Generated Image Display */}
       {generatedImage && (
-        <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <h3 className="text-xl font-semibold text-white mb-4">Generated Image</h3>
+        <Card className="overflow-hidden border-0 shadow-xl bg-white">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6">
+            <h3 className="text-2xl font-bold text-white">Your AI Masterpiece</h3>
+            <p className="text-emerald-100 mt-1">Ready to mint as a unique NFT</p>
+          </div>
           
-          <div className="space-y-4">
-            <div className="relative group">
-              <img
-                src={generatedImage}
-                alt="Generated AI art"
-                className="w-full max-w-md mx-auto rounded-lg shadow-2xl transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="p-6 space-y-6">
+            <div className="flex justify-center">
+              <div className="relative group max-w-lg">
+                <img
+                  src={generatedImage}
+                  alt="Generated AI artwork"
+                  className="w-full rounded-xl shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
             </div>
             
-            {isConnected && (
-              <NFTMinter 
-                imageUrl={generatedImage}
-                prompt={imagePrompt}
-              />
-            )}
-            
-            {!isConnected && (
-              <div className="text-center py-4">
-                <p className="text-gray-400 mb-2">Connect your wallet to mint this image as an NFT</p>
+            {isConnected ? (
+              <div className="bg-gray-50 rounded-xl p-1">
+                <NFTMinter 
+                  imageUrl={generatedImage}
+                  prompt={imagePrompt}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
+                <div className="max-w-sm mx-auto">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">Connect Your Wallet</h4>
+                  <p className="text-gray-600">
+                    Connect your crypto wallet to mint this artwork as an NFT and add it to your collection.
+                  </p>
+                </div>
               </div>
             )}
           </div>
