@@ -39,13 +39,26 @@ SynthaMint is a cutting-edge decentralized application (dApp) that bridges the g
 
 ## ✨ Features
 
-- 🤖 **AI Image Generation**: Transform text prompts into stunning visual art
-- 🎯 **One-Click Minting**: Streamlined NFT creation process
-- 👥 **Collaborative Mode**: Real-time collaboration on NFT projects
+### Core Features
+- 🤖 **AI Image Generation**: Transform text prompts into stunning visual art using multiple AI services
+- 🎯 **One-Click Minting**: Streamlined NFT creation process with gas optimization
 - 💾 **Decentralized Storage**: IPFS integration for metadata and assets
-- 🔗 **Avalanche Network**: Fast and low-cost transactions
+- 🔗 **Avalanche Network**: Fast and low-cost transactions on Fuji testnet
 - 📱 **Responsive Design**: Optimized for desktop and mobile devices
 - 🎨 **Modern UI**: Beautiful interface built with shadcn/ui components
+
+### 🌟 NEW: Enhanced Collaboration Features
+- 👥 **Real-time Collaboration**: Multi-user collaborative NFT creation
+- 🔗 **Session Sharing**: Shareable links for instant collaboration
+- 🎭 **Advanced Prompt Blending**: 4 different AI blending strategies:
+  - **Fusion**: Harmonious artistic synthesis
+  - **Style Transfer**: Content + Style combination
+  - **Weighted**: Custom balance control
+  - **Merge**: Direct prompt concatenation
+- ⚖️ **Interactive Controls**: Real-time weight adjustment for prompt influence
+- 🎨 **Dual Ownership NFTs**: Both collaborators credited in metadata
+- 📊 **Live Sync**: Real-time updates between collaborators
+- 🏆 **CollabMinted Events**: Smart contract analytics for collaborations
 
 ## 🛠️ Tech Stack
 
@@ -104,6 +117,50 @@ nvm use node
    ```bash
    npm run setup
    ```
+
+4. **Configure environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your API keys and configuration
+   ```
+
+5. **Set up collaboration server (optional but recommended)**
+   ```bash
+   cd collab-server
+   npm install
+   cp .env.example .env
+   # Configure collaboration server environment
+   npm start
+   ```
+   The collaboration server runs on http://localhost:3001
+
+## 🤝 Collaboration Features Setup
+
+For full collaboration features, you'll need:
+
+### 1. AI Service Configuration
+Choose at least one AI service:
+- **Replicate** (recommended for collaboration): https://replicate.com/account/api-tokens
+- **OpenAI**: https://platform.openai.com/api-keys  
+- **Stability AI**: https://platform.stability.ai/account/keys
+
+### 2. Real-time Collaboration Server
+The collaboration server enables real-time features:
+```bash
+cd collab-server
+npm install
+npm start
+```
+
+### 3. Environment Variables
+Key variables for collaboration:
+```env
+VITE_REPLICATE_API_KEY=your_key_here
+VITE_SOCKET_URL_DEVELOPMENT=http://localhost:3001
+VITE_SOCKET_URL_PRODUCTION=https://your-server.com
+```
+
+See [COLLAB_SETUP.md](./COLLAB_SETUP.md) for detailed configuration.
 
 4. **Configure environment variables**
    ```bash

@@ -92,6 +92,13 @@ contract DreamMintNFT is
         uint256 timestamp
     );
     
+    event CollabMinted(
+        address indexed user1,
+        address indexed user2,
+        string prompt1,
+        string prompt2
+    );
+    
     event CollaborativeNFTMinted(
         address indexed user1,
         address indexed user2,
@@ -222,6 +229,9 @@ contract DreamMintNFT is
         userStats[user2].totalCollaborations++;
         userStats[mintTo].totalMinted++;
         userStats[mintTo].lastMintTimestamp = block.timestamp;
+        
+        // Emit the CollabMinted event for analytics
+        emit CollabMinted(user1, user2, prompt1, prompt2);
         
         emit CollaborativeNFTMinted(
             user1,

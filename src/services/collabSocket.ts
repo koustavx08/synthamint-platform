@@ -11,12 +11,18 @@ export interface CollabSession {
   hostApproved?: boolean;
   guestApproved?: boolean;
   status: 'waiting' | 'prompting' | 'generating' | 'approving' | 'minting' | 'completed';
+  // Enhanced features
+  blendingStrategy?: 'merge' | 'fusion' | 'style-transfer' | 'weighted';
+  promptWeights?: number[];
+  revisedPrompt?: string;
+  mintTransactionHash?: string;
 }
 
 export interface CollabSocketEvents {
   'session-created': (session: CollabSession) => void;
   'user-joined': (session: CollabSession) => void;
   'prompt-updated': (session: CollabSession) => void;
+  'blending-updated': (session: CollabSession) => void;
   'image-generated': (session: CollabSession) => void;
   'approval-updated': (session: CollabSession) => void;
   'session-completed': (session: CollabSession) => void;
@@ -234,13 +240,25 @@ class CollabSocketService {
     this.socket?.emit('update-prompt', sessionId, prompt, isHost);
   }
 
+  updateBlendingStrategy(sessionId: string, strategy: string, weights?: number[]) {
+    this.socket?.emit('update-blending-strategy', sessionId, strategy, weights);
+  }
+
+  updateGeneratedImage(sessionId: string, imageUrl: string, revisedPrompt?: string) {
+    this.socket?.emit('update-generated-image', sessionId, imageUrl, revisedPrompt);
+  }
+
   updateApproval(sessionId: string, approved: boolean, isHost: boolean) {
     this.socket?.emit('update-approval', sessionId, approved, isHost);
   }
 
+  completeSession(sessionId: string, mintHash: string) {
+    this.socket?.emit('complete-session', sessionId, mintHash);
+  }
+
   onSessionUpdate(callback: (session: CollabSession) => void) {
     const events: (keyof CollabSocketEvents)[] = [
-      'session-created', 'user-joined', 'prompt-updated', 
+      'session-created', 'user-joined', 'prompt-updated', 'blending-updated',
       'image-generated', 'approval-updated', 'session-completed'
     ];
     

@@ -5,6 +5,9 @@ export interface ImageGenerationOptions {
   quality?: string;
   style?: string;
   n?: number;
+  collaborativePrompts?: string[];
+  blendingStrategy?: 'merge' | 'fusion' | 'style-transfer' | 'weighted';
+  weights?: number[];
 }
 
 export interface ImageGenerationResult {
@@ -113,13 +116,156 @@ export class AIImageService {
   }
 
   /**
+   * Advanced prompt blending for collaborative art generation
+   */
+  blendPrompts(prompts: string[], strategy: 'merge' | 'fusion' | 'style-transfer' | 'weighted' = 'fusion', weights?: number[]): string {
+    if (prompts.length === 0) return '';
+    if (prompts.length === 1) return prompts[0];
+
+    switch (strategy) {
+      case 'merge':
+        // Simple concatenation with connectors
+        return prompts.join(', combined with ');
+
+      case 'fusion':
+        // Advanced fusion with style mixing
+        const [prompt1, prompt2] = prompts;
+        return `A masterful fusion of (${prompt1}) seamlessly blended with (${prompt2}), creating a harmonious artistic synthesis that combines the best elements of both visions, professional digital art, highly detailed, cinematic lighting`;
+
+      case 'style-transfer':
+        // Use first prompt as content, others as style
+        const [content, ...styles] = prompts;
+        return `${content} rendered in the artistic style of: ${styles.join(' mixed with ')}, professional artwork, detailed, vibrant`;
+
+      case 'weighted':
+        // Weighted combination using attention mechanisms
+        if (weights && weights.length === prompts.length) {
+          const weightedPrompts = prompts.map((prompt, i) => {
+            const weight = weights[i];
+            if (weight > 0.7) return `((${prompt}))`;
+            if (weight > 0.5) return `(${prompt})`;
+            if (weight > 0.3) return prompt;
+            return `[${prompt}]`;
+          });
+          return weightedPrompts.join(' ');
+        }
+        // Fall back to fusion if weights not provided
+        return this.blendPrompts(prompts, 'fusion');
+
+      default:
+        return prompts.join(', ');
+    }
+  }
+
+  /**
+   * Generate collaborative image with advanced prompt blending
+   */
+  async generateCollaborativeImage(
+    prompt1: string, 
+    prompt2: string, 
+    options: Partial<ImageGenerationOptions> = {}
+  ): Promise<ImageGenerationResult> {
+    const blendingStrategy = options.blendingStrategy || 'fusion';
+    const weights = options.weights || [0.5, 0.5];
+    
+    const blendedPrompt = this.blendPrompts([prompt1, prompt2], blendingStrategy, weights);
+    
+    const enhancedOptions: ImageGenerationOptions = {
+      ...options,
+      prompt: blendedPrompt,
+      style: options.style || 'vivid',
+      quality: options.quality || 'hd'
+    };
+
+    return this.generateImage(enhancedOptions);
+  }
+
+  /**
+   * Generate an image using Replicate's SDXL with advanced features
+   */
+  async generateWithReplicate(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
+    const apiKey = import.meta.env.VITE_REPLICATE_API_KEY;
+    if (!apiKey) {
+      throw new Error('Replicate API key not configured');
+    }
+
+    try {
+      // Start the prediction
+      const response = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", // SDXL
+          input: {
+            prompt: options.prompt,
+            width: 1024,
+            height: 1024,
+            num_outputs: 1,
+            scheduler: "K_EULER",
+            num_inference_steps: 50,
+            guidance_scale: 7.5,
+            prompt_strength: 0.8,
+            refine: "expert_ensemble_refiner",
+            high_noise_frac: 0.8
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to start prediction');
+      }
+
+      const prediction = await response.json();
+      
+      // Poll for completion
+      let result = prediction;
+      while (result.status === 'starting' || result.status === 'processing') {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+          headers: {
+            'Authorization': `Token ${apiKey}`,
+          },
+        });
+        
+        result = await pollResponse.json();
+      }
+
+      if (result.status === 'failed') {
+        throw new Error(result.error || 'Image generation failed');
+      }
+
+      return {
+        url: result.output[0],
+        revisedPrompt: options.prompt
+      };
+    } catch (error) {
+      console.error('Replicate generation error:', error);
+      throw error;
+    }
+  }
+  /**
    * Auto-select the best available AI service and generate an image
    */
   async generateImage(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
+    const replicateKey = import.meta.env.VITE_REPLICATE_API_KEY;
     const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const stabilityKey = import.meta.env.VITE_STABILITY_AI_API_KEY;
 
-    // Try OpenAI first if available
+    // Prefer Replicate for collaborative features (best for prompt blending)
+    if (replicateKey && options.collaborativePrompts) {
+      try {
+        return await this.generateWithReplicate(options);
+      } catch (error) {
+        console.warn('Replicate generation failed, trying fallback:', error);
+      }
+    }
+
+    // Try OpenAI for single prompts if available
     if (openaiKey) {
       try {
         return await this.generateWithOpenAI(options);
@@ -138,7 +284,7 @@ export class AIImageService {
       }
     }
 
-    throw new Error('No AI image generation service is configured. Please add API keys for OpenAI or Stability AI.');
+    throw new Error('No AI image generation service is configured. Please add API keys for Replicate, OpenAI, or Stability AI.');
   }
 
   /**
@@ -146,6 +292,10 @@ export class AIImageService {
    */
   getAvailableServices(): string[] {
     const services: string[] = [];
+    
+    if (import.meta.env.VITE_REPLICATE_API_KEY) {
+      services.push('Replicate SDXL');
+    }
     
     if (import.meta.env.VITE_OPENAI_API_KEY) {
       services.push('OpenAI DALL-E');

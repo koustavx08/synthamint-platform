@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { useAccount } from 'wagmi';
-import { Copy, Users, Loader, Check, X } from 'lucide-react';
+import { Copy, Users, Loader, Check, X, Palette, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { collabSocket, CollabSession } from '../services/collabSocket';
 import { aiImageService } from '@/services/aiImageService';
@@ -21,6 +23,11 @@ const CollabMode = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [socketError, setSocketError] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  
+  // Enhanced collaboration options
+  const [blendingStrategy, setBlendingStrategy] = useState<'merge' | 'fusion' | 'style-transfer' | 'weighted'>('fusion');
+  const [promptWeight, setPromptWeight] = useState([50]);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   
   const { address } = useAccount();
   const { toast } = useToast();
@@ -54,6 +61,14 @@ const CollabMode = () => {
       
       if (updatedSession.status === 'generating') {
         generateCollabImage(updatedSession);
+      }
+      
+      // Sync blending options from other user
+      if (updatedSession.blendingStrategy && updatedSession.blendingStrategy !== blendingStrategy) {
+        setBlendingStrategy(updatedSession.blendingStrategy);
+      }
+      if (updatedSession.promptWeights && JSON.stringify(updatedSession.promptWeights) !== JSON.stringify(promptWeight)) {
+        setPromptWeight([updatedSession.promptWeights[0] * 100]);
       }
     });
   }, []);
@@ -167,22 +182,36 @@ const CollabMode = () => {
     }
   };
 
+  const updateBlendingOptions = (strategy: string, weights?: number[]) => {
+    setBlendingStrategy(strategy as any);
+    if (weights) setPromptWeight(weights);
+    if (session) {
+      collabSocket.updateBlendingStrategy(session.id, strategy, weights);
+    }
+  };
+
   const generateCollabImage = async (sessionData: CollabSession) => {
     if (!sessionData.hostPrompt || !sessionData.guestPrompt) return;
     
     setIsGenerating(true);
     
     try {
-      // Merge prompts for collaborative generation
-      const mergedPrompt = `${sessionData.hostPrompt}, ${sessionData.guestPrompt}`;
+      // Calculate weights based on slider (convert 0-100 to weights that sum to 1)
+      const hostWeight = promptWeight[0] / 100;
+      const guestWeight = 1 - hostWeight;
       
-      // Use AI image generation service
-      const result = await aiImageService.generateImage({
-        prompt: mergedPrompt,
-        size: "1024x1024",
-        quality: "standard",
-        style: "vivid"
-      });
+      // Use enhanced collaborative image generation
+      const result = await aiImageService.generateCollaborativeImage(
+        sessionData.hostPrompt,
+        sessionData.guestPrompt,
+        {
+          blendingStrategy,
+          weights: [hostWeight, guestWeight],
+          style: "vivid",
+          quality: "hd",
+          size: "1024x1024"
+        }
+      );
       
       // Update session with generated image
       const updatedSession = {
@@ -193,8 +222,8 @@ const CollabMode = () => {
       setSession(updatedSession);
       
       toast({
-        title: "Collaborative Image Generated!",
-        description: "Both prompts have been merged and generated successfully",
+        title: "Collaborative Masterpiece Created! ✨",
+        description: `Prompts blended using ${blendingStrategy} strategy with ${Math.round(hostWeight * 100)}%/${Math.round(guestWeight * 100)}% weighting`,
       });
     } catch (error) {
       console.error('Error generating collaborative image:', error);
@@ -473,20 +502,107 @@ const CollabMode = () => {
               </div>
             </div>
 
+            {/* Advanced Blending Options */}
+            {canGenerate && (
+              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="font-semibold text-gray-700 flex items-center">
+                      <Palette className="w-4 h-4 mr-2 text-blue-600" />
+                      AI Blending Controls
+                    </h5>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      {showAdvancedOptions ? 'Hide' : 'Show'} Advanced
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Blending Strategy
+                      </label>
+                      <Select value={blendingStrategy} onValueChange={(value: any) => {
+                        updateBlendingOptions(value, [promptWeight[0] / 100, 1 - promptWeight[0] / 100]);
+                      }}>
+                        <SelectTrigger className="border-blue-200 focus:border-blue-400">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fusion">🔮 Fusion - Harmonious blend</SelectItem>
+                          <SelectItem value="merge">🔗 Merge - Direct combination</SelectItem>
+                          <SelectItem value="style-transfer">🎨 Style Transfer - Content + Style</SelectItem>
+                          <SelectItem value="weighted">⚖️ Weighted - Custom balance</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {(blendingStrategy === 'weighted' || showAdvancedOptions) && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Prompt Balance: Host {promptWeight[0]}% - Guest {100 - promptWeight[0]}%
+                        </label>
+                        <Slider
+                          value={promptWeight}
+                          onValueChange={(value) => {
+                            setPromptWeight(value);
+                            updateBlendingOptions(blendingStrategy, [value[0] / 100, 1 - value[0] / 100]);
+                          }}
+                          max={100}
+                          min={0}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>More Host Influence</span>
+                          <span>More Guest Influence</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {showAdvancedOptions && (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-blue-200">
+                        <div className="text-xs text-gray-600">
+                          <strong>Fusion:</strong> Creates harmonious artistic synthesis
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          <strong>Style Transfer:</strong> Uses host as content, guest as style
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          <strong>Merge:</strong> Simple prompt concatenation
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          <strong>Weighted:</strong> Custom attention weights
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {canGenerate && (
               <Button
                 onClick={() => generateCollabImage(session)}
                 disabled={isGenerating}
                 size="lg"
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {isGenerating ? (
                   <>
                     <Loader className="w-5 h-5 mr-3 animate-spin" />
-                    Creating collaborative masterpiece...
+                    Creating collaborative masterpiece using {blendingStrategy} blending...
                   </>
                 ) : (
-                  'Generate Collaborative Artwork'
+                  <>
+                    <Sparkles className="w-5 h-5 mr-3" />
+                    Generate Collaborative Artwork
+                  </>
                 )}
               </Button>
             )}
@@ -564,6 +680,8 @@ const CollabMode = () => {
                   guestPrompt={session.guestPrompt!}
                   hostAddress={session.host}
                   guestAddress={session.guest!}
+                  sessionId={session.id}
+                  blendingStrategy={blendingStrategy}
                 />
               </div>
             )}

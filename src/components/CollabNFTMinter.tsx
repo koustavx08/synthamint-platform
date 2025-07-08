@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
-import { Loader, Users } from 'lucide-react';
+import { Loader, Users, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NFT_CONTRACT_ADDRESS, NFT_CONTRACT_ABI } from '../config/contract';
 import { avalancheFuji } from 'viem/chains';
 import { uploadToIPFS } from '../utils/ipfsUtils';
+import { collabSocket } from '../services/collabSocket';
 
 interface CollabNFTMinterProps {
   imageUrl: string;
@@ -16,6 +17,8 @@ interface CollabNFTMinterProps {
   guestPrompt: string;
   hostAddress: string;
   guestAddress: string;
+  sessionId?: string;
+  blendingStrategy?: string;
 }
 
 const CollabNFTMinter = ({ 
@@ -23,7 +26,9 @@ const CollabNFTMinter = ({
   hostPrompt, 
   guestPrompt, 
   hostAddress, 
-  guestAddress 
+  guestAddress,
+  sessionId,
+  blendingStrategy = 'fusion'
 }: CollabNFTMinterProps) => {
   const [nftName, setNftName] = useState('');
   const [nftDescription, setNftDescription] = useState('');
@@ -47,6 +52,13 @@ const CollabNFTMinter = ({
     if (savedSecretKey) setPinataSecretKey(savedSecretKey);
   }, []);
 
+  useEffect(() => {
+    // Complete the session when minting is successful
+    if (isSuccess && hash && sessionId) {
+      collabSocket.completeSession(sessionId, hash);
+    }
+  }, [isSuccess, hash, sessionId]);
+
   const uploadCollabMetadata = async () => {
     if (!pinataApiKey || !pinataSecretKey) {
       toast({
@@ -63,11 +75,15 @@ const CollabNFTMinter = ({
     try {
       const metadata = {
         name: nftName || 'Collaborative AI NFT',
-        description: nftDescription || `Collaborative AI generated artwork created by two artists`,
+        description: nftDescription || `Collaborative AI generated artwork created by two artists using ${blendingStrategy} blending strategy`,
         attributes: [
           {
             trait_type: 'Generation Method',
             value: 'Collaborative AI'
+          },
+          {
+            trait_type: 'Blending Strategy',
+            value: blendingStrategy
           },
           {
             trait_type: 'Host Prompt',
@@ -88,6 +104,10 @@ const CollabNFTMinter = ({
           {
             trait_type: 'Collaboration Type',
             value: 'Dual Ownership'
+          },
+          {
+            trait_type: 'Creation Date',
+            value: new Date().toISOString()
           }
         ]
       };
@@ -159,6 +179,19 @@ const CollabNFTMinter = ({
           <p className="text-green-300 text-sm mt-1">
             Your collaborative artwork has been minted with dual ownership
           </p>
+          {hash && (
+            <div className="mt-3 flex items-center justify-center space-x-2">
+              <a 
+                href={`https://testnet.snowtrace.io/tx/${hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-green-400 hover:text-green-300 text-sm"
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                View on Snowtrace
+              </a>
+            </div>
+          )}
         </div>
         <Button
           onClick={() => window.location.reload()}

@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -56,7 +57,14 @@ io.on('connection', (socket) => {
         hostApproved: false,
         guestApproved: false,
         status: 'waiting',
-        createdAt: new Date()
+        createdAt: new Date(),
+        blendingStrategy: 'fusion',
+        promptWeights: [0.5, 0.5],
+        aiService: 'auto',
+        sessionMetadata: {
+          hostIP: socket.handshake.address,
+          userAgent: socket.handshake.headers['user-agent']
+        }
       };
 
       sessions.set(sessionId, session);
@@ -197,8 +205,33 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Update blending strategy
+  socket.on('update-blending-strategy', (sessionId, strategy, weights) => {
+    try {
+      const session = sessions.get(sessionId);
+      
+      if (!session) {
+        socket.emit('error', 'Session not found');
+        return;
+      }
+
+      session.blendingStrategy = strategy;
+      if (weights && Array.isArray(weights)) {
+        session.promptWeights = weights;
+      }
+
+      console.log(`Blending strategy updated in session ${sessionId}: ${strategy}`);
+
+      // Broadcast strategy update to all participants
+      io.to(sessionId).emit('blending-updated', formatSessionForClient(session));
+    } catch (error) {
+      console.error('Error updating blending strategy:', error);
+      socket.emit('error', error.message);
+    }
+  });
+
   // Update generated image
-  socket.on('image-generated', (sessionId, imageUrl) => {
+  socket.on('update-generated-image', (sessionId, imageUrl, revisedPrompt) => {
     try {
       const session = sessions.get(sessionId);
       
@@ -208,11 +241,12 @@ io.on('connection', (socket) => {
       }
 
       session.generatedImage = imageUrl;
+      session.revisedPrompt = revisedPrompt;
       session.status = 'approving';
 
       console.log(`Image generated for session ${sessionId}`);
 
-      // Broadcast image generation
+      // Broadcast image generation to all participants
       io.to(sessionId).emit('image-generated', formatSessionForClient(session));
     } catch (error) {
       console.error('Error updating generated image:', error);
@@ -220,8 +254,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Mark session as completed
-  socket.on('session-completed', (sessionId) => {
+  // Complete collaboration session
+  socket.on('complete-session', (sessionId, mintHash) => {
     try {
       const session = sessions.get(sessionId);
       
@@ -231,17 +265,19 @@ io.on('connection', (socket) => {
       }
 
       session.status = 'completed';
+      session.mintTransactionHash = mintHash;
+      session.completedAt = new Date();
 
-      console.log(`Session completed: ${sessionId}`);
+      console.log(`Session ${sessionId} completed with mint hash: ${mintHash}`);
 
-      // Broadcast completion
+      // Broadcast completion to all participants
       io.to(sessionId).emit('session-completed', formatSessionForClient(session));
 
-      // Clean up session after a delay
+      // Clean up session after a delay (optional)
       setTimeout(() => {
         sessions.delete(sessionId);
         console.log(`Session ${sessionId} cleaned up`);
-      }, 60000); // Clean up after 1 minute
+      }, 5 * 60 * 1000); // 5 minutes
     } catch (error) {
       console.error('Error completing session:', error);
       socket.emit('error', error.message);
