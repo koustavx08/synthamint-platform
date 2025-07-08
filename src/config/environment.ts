@@ -123,10 +123,10 @@ const getSocketUrl = (): string => {
   const environment = getEnvironment();
   
   if (environment === 'production') {
-    return getEnvVar('VITE_SOCKET_URL_PRODUCTION', 'wss://your-socketio-server.com');
+    return getEnvVar('VITE_SOCKET_URL_PRODUCTION', '');
   }
   
-  return getEnvVar('VITE_SOCKET_URL_DEVELOPMENT', 'ws://localhost:3001');
+  return getEnvVar('VITE_SOCKET_URL_DEVELOPMENT', '');
 };
 
 // Main configuration object

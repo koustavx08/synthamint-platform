@@ -36,9 +36,13 @@ class CollabSocketService {
       }
 
       // Socket.io server URL from environment variables
-      const SOCKET_URL = process.env.NODE_ENV === 'production' 
-        ? (import.meta.env.VITE_SOCKET_URL_PRODUCTION || 'wss://your-socketio-server.com')
-        : (import.meta.env.VITE_SOCKET_URL_DEVELOPMENT || 'ws://localhost:3001');
+      const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
+      
+      // If no socket URL is configured, reject the connection
+      if (!SOCKET_URL || SOCKET_URL.trim() === '' || SOCKET_URL.includes('your-socket')) {
+        reject(new Error('Socket server not configured. Set VITE_SOCKET_URL in your environment variables.'));
+        return;
+      }
 
       try {
         this.socket = io(SOCKET_URL, {

@@ -19,6 +19,7 @@ const CollabMode = () => {
   const [myPrompt, setMyPrompt] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [socketError, setSocketError] = useState<string | null>(null);
   
   const { address } = useAccount();
   const { toast } = useToast();
@@ -26,6 +27,19 @@ const CollabMode = () => {
   useEffect(() => {
     if (address) {
       initializeSocket();
+    }
+    
+    // Check for collaboration session ID in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const collabId = urlParams.get('collab');
+    if (collabId && collabId.trim() !== '') {
+      setJoinSessionId(collabId);
+      // Auto-join after socket initializes
+      setTimeout(() => {
+        if (address && collabId) {
+          joinSession(collabId);
+        }
+      }, 1000);
     }
     
     return () => {
@@ -44,8 +58,17 @@ const CollabMode = () => {
   }, []);
 
   const initializeSocket = async () => {
+    // Check if socket URL is configured
+    const socketUrl = import.meta.env.VITE_SOCKET_URL;
+    if (!socketUrl || socketUrl.trim() === '' || socketUrl.includes('your-socket')) {
+      // Socket not configured - collaboration is disabled
+      setSocketError('Collaboration server not configured');
+      return;
+    }
+
     try {
       setIsConnecting(true);
+      setSocketError(null);
       await collabSocket.connect();
       toast({
         title: "Connected",
@@ -53,11 +76,15 @@ const CollabMode = () => {
       });
     } catch (error) {
       console.error('Socket connection failed:', error);
-      toast({
-        title: "Connection Issue",
-        description: "Using offline mode for demo purposes",
-        variant: "destructive",
-      });
+      setSocketError(error instanceof Error ? error.message : 'Socket connection failed');
+      // Only show toast for actual connection errors, not configuration issues
+      if (!error?.message?.includes('not configured')) {
+        toast({
+          title: "Connection Failed",
+          description: "Unable to connect to collaboration server. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -93,12 +120,13 @@ const CollabMode = () => {
     }
   };
 
-  const joinSession = async () => {
-    if (!address || !joinSessionId.trim()) return;
+  const joinSession = async (sessionId?: string) => {
+    const targetSessionId = sessionId || joinSessionId.trim();
+    if (!address || !targetSessionId) return;
     
     try {
       setIsConnecting(true);
-      const sessionData = await collabSocket.joinSession(joinSessionId.trim(), address);
+      const sessionData = await collabSocket.joinSession(targetSessionId, address);
       setSession(sessionData);
       setMode('guest');
       
@@ -227,16 +255,57 @@ const CollabMode = () => {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Auto-join indicator */}
+          {joinSessionId && joinSessionId.trim() !== '' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="text-blue-800 font-semibold text-sm mb-1">Joining Collaboration</h4>
+                  <p className="text-blue-700 text-sm">
+                    Connecting to session: <code className="bg-blue-100 px-1 rounded text-xs">{joinSessionId}</code>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {socketError && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 text-sm font-semibold">!</span>
+                </div>
+                <div>
+                  <h4 className="text-amber-800 font-semibold text-sm mb-1">Collaboration Unavailable</h4>
+                  <p className="text-amber-700 text-sm mb-2">
+                    Real-time collaboration features require a socket server configuration.
+                  </p>
+                  <p className="text-amber-600 text-xs">
+                    Add <code className="bg-amber-100 px-1 rounded">VITE_SOCKET_URL</code> to your environment variables to enable collaboration.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Button
             onClick={createSession}
-            disabled={isConnecting}
+            disabled={isConnecting || !!socketError}
             size="lg"
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
           >
             {isConnecting ? (
               <>
                 <Loader className="w-5 h-5 mr-3 animate-spin" />
-                Creating session...
+                Connecting...
+              </>
+            ) : socketError ? (
+              <>
+                <Users className="w-5 h-5 mr-3" />
+                Collaboration Unavailable
               </>
             ) : (
               <>
@@ -264,13 +333,14 @@ const CollabMode = () => {
               value={joinSessionId}
               onChange={(e) => setJoinSessionId(e.target.value)}
               className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+              disabled={!!socketError}
             />
             <Button
-              onClick={joinSession}
-              disabled={isConnecting || !joinSessionId.trim()}
+              onClick={() => joinSession()}
+              disabled={isConnecting || !joinSessionId.trim() || !!socketError}
               variant="outline"
               size="lg"
-              className="w-full h-12 border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 font-semibold"
+              className="w-full h-12 border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 font-semibold disabled:opacity-50"
             >
               Join Collaboration
             </Button>
