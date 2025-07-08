@@ -5,7 +5,6 @@ import { config } from '../config/wagmi';
 import WalletConnection from './WalletConnection';
 import ImageGenerator from './ImageGenerator';
 import CollabMode from './CollabMode';
-import SetupInstructions from './SetupInstructions';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Users, Palette } from 'lucide-react';
@@ -31,7 +30,6 @@ const NFTMintingApp = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <SetupInstructions />
             <WalletConnection />
             
             {/* Mode Selector */}
