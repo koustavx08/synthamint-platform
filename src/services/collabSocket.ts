@@ -35,19 +35,26 @@ class CollabSocketService {
         return;
       }
 
-      // Socket.io server URL from environment variables
-      const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
+      // Get Socket.io server URL from environment variables
+      const socketUrlProd = import.meta.env.VITE_SOCKET_URL_PRODUCTION;
+      const socketUrlDev = import.meta.env.VITE_SOCKET_URL_DEVELOPMENT;
+      const nodeEnv = import.meta.env.NODE_ENV || import.meta.env.MODE;
+      
+      // Use environment-specific URL or fallback to VITE_SOCKET_URL
+      const SOCKET_URL = nodeEnv === 'production' ? socketUrlProd : socketUrlDev || import.meta.env.VITE_SOCKET_URL || '';
       
       // If no socket URL is configured, reject the connection
-      if (!SOCKET_URL || SOCKET_URL.trim() === '' || SOCKET_URL.includes('your-socket')) {
+      if (!SOCKET_URL || SOCKET_URL.trim() === '' || SOCKET_URL.includes('your-socket') || SOCKET_URL.includes('your-production')) {
         reject(new Error('Socket server not configured. Set VITE_SOCKET_URL in your environment variables.'));
         return;
       }
 
+      console.log('Attempting to connect to socket server:', SOCKET_URL);
+
       try {
         this.socket = io(SOCKET_URL, {
-          transports: ['websocket'],
-          timeout: 5000,
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
         });
 
         this.socket.on('connect', () => {
@@ -62,10 +69,20 @@ class CollabSocketService {
 
         this.socket.on('connect_error', (error) => {
           console.error('Socket connection error:', error);
+          console.log('Falling back to demo mode...');
           // For demo purposes, we'll create a mock socket
           this.createMockSocket();
           resolve(this.socket!);
         });
+
+        // Add timeout for connection attempt
+        setTimeout(() => {
+          if (!this.socket?.connected) {
+            console.log('Connection timeout - falling back to demo mode');
+            this.createMockSocket();
+            resolve(this.socket!);
+          }
+        }, 10000); // 10 second timeout
 
       } catch (error) {
         console.error('Failed to create socket connection:', error);
@@ -76,48 +93,99 @@ class CollabSocketService {
   }
 
   private createMockSocket() {
+    console.log('Creating mock socket for demo mode');
+    
+    // Store event listeners
+    const listeners: { [key: string]: Function[] } = {};
+    
     // Create a mock socket for development/demo purposes
     const mockSocket = {
       connected: true,
       emit: (event: string, ...args: any[]) => {
         console.log('Mock socket emit:', event, args);
         // Simulate responses for demo
-        this.handleMockEvents(event, args);
+        this.handleMockEvents(event, args, listeners);
       },
       on: (event: string, callback: Function) => {
         console.log('Mock socket listener added:', event);
+        if (!listeners[event]) {
+          listeners[event] = [];
+        }
+        listeners[event].push(callback);
       },
       off: (event: string, callback?: Function) => {
         console.log('Mock socket listener removed:', event);
+        if (callback && listeners[event]) {
+          listeners[event] = listeners[event].filter(cb => cb !== callback);
+        } else if (!callback) {
+          delete listeners[event];
+        }
       },
       disconnect: () => {
         console.log('Mock socket disconnected');
+        Object.keys(listeners).forEach(key => delete listeners[key]);
       }
     } as any;
 
     this.socket = mockSocket;
   }
 
-  private handleMockEvents(event: string, args: any[]) {
+  private handleMockEvents(event: string, args: any[], listeners: { [key: string]: Function[] }) {
     // Simulate server responses for development
     setTimeout(() => {
+      let responseEvent: string | null = null;
+      let responseData: any = null;
+
       switch (event) {
         case 'create-session':
           const sessionId = Math.random().toString(36).substring(7);
-          this.socket?.emit('session-created', {
+          responseEvent = 'session-created';
+          responseData = {
             id: sessionId,
             host: args[0],
             status: 'waiting'
-          });
+          };
           break;
         case 'join-session':
-          this.socket?.emit('user-joined', {
+          responseEvent = 'user-joined';
+          responseData = {
             id: args[0],
-            host: 'mock-host',
+            host: 'mock-host-address',
             guest: args[1],
             status: 'prompting'
-          });
+          };
           break;
+        case 'update-prompt':
+          responseEvent = 'prompt-updated';
+          responseData = {
+            id: args[0],
+            host: 'mock-host-address',
+            guest: 'mock-guest-address',
+            [args[2] ? 'hostPrompt' : 'guestPrompt']: args[1],
+            status: 'prompting'
+          };
+          break;
+        case 'update-approval':
+          responseEvent = 'approval-updated';
+          responseData = {
+            id: args[0],
+            host: 'mock-host-address',
+            guest: 'mock-guest-address',
+            [args[2] ? 'hostApproved' : 'guestApproved']: args[1],
+            status: 'approving'
+          };
+          break;
+      }
+
+      // Trigger the appropriate listeners
+      if (responseEvent && responseData && listeners[responseEvent]) {
+        listeners[responseEvent].forEach(callback => {
+          try {
+            callback(responseData);
+          } catch (error) {
+            console.error('Error in mock socket callback:', error);
+          }
+        });
       }
     }, 500);
   }

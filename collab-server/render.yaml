@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: synthamint-collab-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://synthamint-platform.vercel.app

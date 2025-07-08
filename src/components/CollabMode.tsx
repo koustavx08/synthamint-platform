@@ -20,6 +20,7 @@ const CollabMode = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [socketError, setSocketError] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   
   const { address } = useAccount();
   const { toast } = useToast();
@@ -58,9 +59,13 @@ const CollabMode = () => {
   }, []);
 
   const initializeSocket = async () => {
-    // Check if socket URL is configured
-    const socketUrl = import.meta.env.VITE_SOCKET_URL;
-    if (!socketUrl || socketUrl.trim() === '' || socketUrl.includes('your-socket')) {
+    // Check if socket URL is configured using the same logic as collabSocket service
+    const socketUrlProd = import.meta.env.VITE_SOCKET_URL_PRODUCTION;
+    const socketUrlDev = import.meta.env.VITE_SOCKET_URL_DEVELOPMENT;
+    const nodeEnv = import.meta.env.NODE_ENV || import.meta.env.MODE;
+    const socketUrl = nodeEnv === 'production' ? socketUrlProd : socketUrlDev || import.meta.env.VITE_SOCKET_URL || '';
+    
+    if (!socketUrl || socketUrl.trim() === '' || socketUrl.includes('your-socket') || socketUrl.includes('your-production')) {
       // Socket not configured - collaboration is disabled
       setSocketError('Collaboration server not configured');
       return;
@@ -69,19 +74,29 @@ const CollabMode = () => {
     try {
       setIsConnecting(true);
       setSocketError(null);
+      setIsDemoMode(false);
+      
+      console.log('Initializing socket connection...');
       await collabSocket.connect();
+      
       toast({
         title: "Connected",
-        description: "Ready for collaboration!",
+        description: "Ready for real-time collaboration!",
       });
     } catch (error) {
       console.error('Socket connection failed:', error);
-      setSocketError(error instanceof Error ? error.message : 'Socket connection failed');
-      // Only show toast for actual connection errors, not configuration issues
-      if (!error?.message?.includes('not configured')) {
+      
+      // Check if it's a configuration issue
+      if (error?.message?.includes('not configured')) {
+        setSocketError('Collaboration server not configured');
+        setIsDemoMode(false);
+      } else {
+        // It's a connection issue - the service will fall back to mock mode
+        setSocketError(`Connection failed: ${error?.message || 'Unknown error'}`);
+        setIsDemoMode(true);
         toast({
           title: "Connection Failed",
-          description: "Unable to connect to collaboration server. Please try again later.",
+          description: "Cannot connect to collaboration server. Please check if the server is running.",
           variant: "destructive",
         });
       }
@@ -255,6 +270,23 @@ const CollabMode = () => {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Demo mode indicator */}
+          {isDemoMode && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 text-sm font-semibold">ℹ</span>
+                </div>
+                <div>
+                  <h4 className="text-blue-800 font-semibold text-sm mb-1">Demo Mode Active</h4>
+                  <p className="text-blue-700 text-sm">
+                    You're using a demo version of collaboration features. Real-time sync is simulated.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Auto-join indicator */}
           {joinSessionId && joinSessionId.trim() !== '' && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -310,7 +342,7 @@ const CollabMode = () => {
             ) : (
               <>
                 <Users className="w-5 h-5 mr-3" />
-                Start New Collaboration
+                {isDemoMode ? 'Start Demo Collaboration' : 'Start New Collaboration'}
               </>
             )}
           </Button>
