@@ -1,7 +1,7 @@
 services:
   - type: web
     name: synthamint-collab-server
-    env: node
+    runtime: node
     buildCommand: npm install
     startCommand: npm start
     plan: free
