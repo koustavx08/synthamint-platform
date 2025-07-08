@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
@@ -30,10 +30,37 @@ export const useNFTMinting = ({
   const { address } = useAccount();
   const { toast } = useToast();
 
-  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+
+  // Add useEffect to monitor transaction states
+  useEffect(() => {
+    if (hash) {
+      console.log('Transaction hash received:', hash);
+      toast({
+        title: "Transaction Submitted",
+        description: "Your NFT minting transaction has been submitted to the blockchain.",
+      });
+    }
+  }, [hash, toast]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      console.log('Transaction confirmed successfully');
+      toast({
+        title: "NFT Minted Successfully!",
+        description: "Your NFT has been minted successfully.",
+      });
+    }
+  }, [isSuccess, toast]);
+
+  useEffect(() => {
+    if (writeError) {
+      console.error('Write contract error detected:', writeError);
+    }
+  }, [writeError]);
 
   const uploadToIPFSReal = async () => {
     if (!pinataApiKey || !pinataSecretKey) {
@@ -97,7 +124,15 @@ export const useNFTMinting = ({
     }
 
     try {
+      console.log('Starting minting process...');
       const tokenURI = await uploadToIPFSReal();
+      console.log('IPFS upload completed, token URI:', tokenURI);
+      
+      console.log('Initiating smart contract transaction...');
+      console.log('Contract address:', NFT_CONTRACT_ADDRESS);
+      console.log('User address:', address);
+      console.log('Prompt:', prompt);
+      console.log('Token URI:', tokenURI);
       
       writeContract({
         address: NFT_CONTRACT_ADDRESS as `0x${string}`,
@@ -108,12 +143,24 @@ export const useNFTMinting = ({
         chain: avalancheFuji,
         account: address,
       });
+      
+      console.log('Contract write initiated successfully');
+      
+      if (writeError) {
+        console.error('Write contract error:', writeError);
+        toast({
+          title: "Transaction Error",
+          description: `Transaction failed: ${writeError.message}`,
+          variant: "destructive",
+        });
+      }
+      
     } catch (error) {
-      console.error('Error minting NFT:', error);
+      console.error('Error in mintNFT process:', error);
       if (error instanceof Error && !error.message.includes('API credentials')) {
         toast({
           title: "Error",
-          description: "Failed to mint NFT",
+          description: `Failed to mint NFT: ${error.message}`,
           variant: "destructive",
         });
       }
