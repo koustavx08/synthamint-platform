@@ -1,0 +1,46 @@
+{
+  "name": "dream-mint-verse-contracts",
+  "version": "2.0.0",
+  "description": "Smart contracts for SynthaMint NFT project with collaborative minting",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:fuji": "hardhat run scripts/deploy.js --network fuji",
+    "deploy:avalanche": "hardhat run scripts/deploy.js --network avalanche",
+    "post-deploy:local": "hardhat run scripts/post-deploy.js --network localhost",
+    "post-deploy:fuji": "hardhat run scripts/post-deploy.js --network fuji",
+    "post-deploy:avalanche": "hardhat run scripts/post-deploy.js --network avalanche",
+    "verify:fuji": "hardhat run scripts/verify.js --network fuji",
+    "verify:avalanche": "hardhat run scripts/verify.js --network avalanche",
+    "interact": "hardhat run scripts/interact.js --network",
+    "interact:local": "hardhat run scripts/interact.js --network localhost",
+    "interact:fuji": "hardhat run scripts/interact.js --network fuji",
+    "node": "hardhat node",
+    "clean": "hardhat clean",
+    "size": "hardhat size-contracts",
+    "update-config": "node scripts/update-config.js",
+    "full-deploy:fuji": "npm run deploy:fuji && npm run post-deploy:fuji && npm run verify:fuji",
+    "full-deploy:avalanche": "npm run deploy:avalanche && npm run post-deploy:avalanche && npm run verify:avalanche"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1",
+    "dotenv": "^16.3.1",
+    "hardhat": "^2.19.4",
+    "hardhat-contract-sizer": "^2.10.0",
+    "hardhat-gas-reporter": "^1.0.10"
+  },
+  "keywords": [
+    "NFT",
+    "ERC721",
+    "Avalanche",
+    "AI",
+    "Collaborative",
+    "IPFS"
+  ],
+  "license": "MIT"
+}
