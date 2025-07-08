@@ -1,7 +1,7 @@
 {
   "name": "synthamint",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "postinstall": "npm run clean:sourcemaps",
+    "clean:sourcemaps": "clean-sourcemaps.bat",
     "contracts:install": "cd contracts && npm install",
     "contracts:compile": "cd contracts && npm run compile",
     "contracts:test": "cd contracts && npm run test",
