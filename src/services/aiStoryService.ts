@@ -40,11 +40,19 @@ export class AIStoryService {
     const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
-    // Check if we have valid API keys
+    // Try Hugging Face first (FREE!)
+    try {
+      console.log('Trying Hugging Face for story generation (free)...');
+      return await this.generateWithHuggingFace(prompts);
+    } catch (error) {
+      console.warn('Hugging Face story generation failed, trying paid services:', error);
+    }
+    
+    // Check if we have valid API keys for paid services
     const hasValidOpenAI = openaiKey && openaiKey !== 'your_openai_api_key_here';
     const hasValidGemini = geminiKey && geminiKey !== 'your_gemini_api_key_here';
     
-    // If no valid API keys, return demo
+    // If no valid API keys for paid services, return demo
     if (!hasValidOpenAI && !hasValidGemini) {
       return this.generateDemoStory(prompts);
     }
@@ -157,6 +165,42 @@ export class AIStoryService {
     
     const data = await response.json();
     return { story: data.candidates[0].content.parts[0].text.trim() };
+  }
+
+  /**
+   * Generate story using Hugging Face (Free)
+   */
+  private async generateWithHuggingFace(prompts: string[]): Promise<StoryGenerationResult> {
+    try {
+      const promptText = `Write a connected, imaginative comic story using these prompts as a narrative arc. Prompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
+      
+      const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: promptText,
+          parameters: {
+            max_length: 800,
+            temperature: 0.8,
+            do_sample: true
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Hugging Face story generation failed');
+      }
+
+      const data = await response.json();
+      const story = Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
+      
+      return { story: story.trim() };
+    } catch (error) {
+      console.warn('Hugging Face story generation failed:', error);
+      throw error;
+    }
   }
 
   /**

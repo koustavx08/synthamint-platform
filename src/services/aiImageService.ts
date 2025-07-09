@@ -116,6 +116,44 @@ export class AIImageService {
   }
 
   /**
+   * Generate an image using Hugging Face (Free)
+   */
+  async generateWithHuggingFace(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
+    try {
+      const response = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: options.prompt,
+          parameters: {
+            num_inference_steps: 20,
+            guidance_scale: 7.5,
+            width: 1024,
+            height: 1024
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Hugging Face generation failed');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      return {
+        url,
+        revisedPrompt: options.prompt
+      };
+    } catch (error) {
+      console.warn('Hugging Face generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Advanced prompt blending for collaborative art generation
    */
   blendPrompts(prompts: string[], strategy: 'merge' | 'fusion' | 'style-transfer' | 'weighted' = 'fusion', weights?: number[]): string {
@@ -261,7 +299,15 @@ export class AIImageService {
     const hasValidStability = stabilityKey && stabilityKey !== 'your_stability_ai_api_key_here';
     const hasValidReplicate = replicateKey && replicateKey !== 'your_replicate_api_key_here';
 
-    // If no valid API keys, return demo placeholder
+    // Try Hugging Face first (FREE!)
+    try {
+      console.log('Trying Hugging Face (free)...');
+      return await this.generateWithHuggingFace(options);
+    } catch (error) {
+      console.warn('Hugging Face generation failed, trying paid services:', error);
+    }
+
+    // If no valid API keys for paid services, return demo placeholder
     if (!hasValidOpenAI && !hasValidStability && !hasValidReplicate) {
       return this.generateDemoImage(options);
     }
