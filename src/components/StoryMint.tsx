@@ -102,210 +102,294 @@ const StoryMint = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            🎨 StoryMint: Enhanced AI Comic NFT Creator
-            {storyMetadata && (
-              <Badge variant="secondary">
-                {storyMetadata.model} {storyMetadata.style}
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600">
-              {error}
+    <div className="container mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl">📚</span>
             </div>
-          )}
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+              StoryMint
+            </h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Create immersive comic NFTs with AI-powered storytelling and stunning visuals
+          </p>
+        </div>
+
+        <Card className="overflow-hidden border shadow-2xl bg-card/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-r from-primary via-primary to-accent p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-primary-foreground mb-2">Enhanced AI Comic NFT Creator</h2>
+                <p className="text-primary-foreground/80">Transform your ideas into professional comic narratives</p>
+              </div>
+              {storyMetadata && (
+                <Badge variant="secondary" className="text-lg px-4 py-2 bg-background/20 text-primary-foreground border-primary-foreground/20">
+                  {storyMetadata.model} • {storyMetadata.style}
+                </Badge>
+              )}
+            </div>
+          </div>
           
-          {step === 'input' && (
-            <div className="space-y-6">
-              {/* AI Configuration */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">🧠 AI Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">AI Model</label>
-                      <Select value={aiModel} onValueChange={(value) => setAiModel(value as typeof aiModel)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select AI model" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">🎯 Auto (Best Available)</SelectItem>
-                          <SelectItem value="openrouter">🔥 OpenRouter (Free GPT-style)</SelectItem>
-                          <SelectItem value="huggingface-spaces">🤗 HuggingFace (Free)</SelectItem>
-                          <SelectItem value="koboldai">⚔️ KoboldAI (Community)</SelectItem>
-                          <SelectItem value="openai">💎 OpenAI (Premium)</SelectItem>
-                          <SelectItem value="gemini">🌟 Google Gemini (Premium)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="comic-style" 
-                          checked={useComicStyle} 
-                          onCheckedChange={(checked) => setUseComicStyle(checked === true)}
-                        />
-                        <label htmlFor="comic-style" className="text-sm font-medium">
-                          📖 Comic Book Style
-                        </label>
+          <CardContent className="p-8">
+            {error && (
+              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center">
+                    <span className="text-destructive font-bold">!</span>
+                  </div>
+                  {error}
+                </div>
+              </div>
+            )}
+            
+            {step === 'input' && (
+              <div className="space-y-8">
+                {/* AI Configuration */}
+                <Card className="border-2 border-border/50 bg-accent/20 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
+                        🧠
+                      </div>
+                      AI Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-lg font-semibold text-foreground">AI Model</label>
+                        <Select value={aiModel} onValueChange={(value) => setAiModel(value as typeof aiModel)}>
+                          <SelectTrigger className="h-12 text-base bg-background/50 border-2">
+                            <SelectValue placeholder="Select AI model" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card/95 backdrop-blur-md border-2">
+                            <SelectItem value="auto">🎯 Auto (Best Available)</SelectItem>
+                            <SelectItem value="openrouter">🔥 OpenRouter (Free GPT-style)</SelectItem>
+                            <SelectItem value="huggingface-spaces">🤗 HuggingFace (Free)</SelectItem>
+                            <SelectItem value="koboldai">⚔️ KoboldAI (Community)</SelectItem>
+                            <SelectItem value="openai">💎 OpenAI (Premium)</SelectItem>
+                            <SelectItem value="gemini">🌟 Google Gemini (Premium)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="dialogue" 
-                          checked={characterDialogue} 
-                          onCheckedChange={(checked) => setCharacterDialogue(checked === true)}
-                        />
-                        <label htmlFor="dialogue" className="text-sm font-medium">
-                          💬 Character Dialogue
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {aiModel === 'auto' && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700">
-                      ✨ Auto mode will try free services first (OpenRouter, HuggingFace, KoboldAI) before using premium APIs.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Story Prompts */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">📝 Story Prompts</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {prompts.map((prompt, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-medium">
-                          {idx + 1}
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border">
+                          <Checkbox 
+                            id="comic-style" 
+                            checked={useComicStyle} 
+                            onCheckedChange={(checked) => setUseComicStyle(checked === true)}
+                            className="w-5 h-5"
+                          />
+                          <label htmlFor="comic-style" className="text-base font-medium cursor-pointer">
+                            📖 Comic Book Style
+                          </label>
                         </div>
-                        <Input
-                          value={prompt}
-                          onChange={e => handlePromptChange(idx, e.target.value)}
-                          placeholder={`Panel ${idx + 1} - Describe the scene or action`}
-                          className="flex-1"
-                        />
-                        {prompts.length > MIN_PROMPTS && (
-                          <Button variant="ghost" onClick={() => removePrompt(idx)} className="text-red-500">
-                            ✕
-                          </Button>
-                        )}
+                        
+                        <div className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border">
+                          <Checkbox 
+                            id="dialogue" 
+                            checked={characterDialogue} 
+                            onCheckedChange={(checked) => setCharacterDialogue(checked === true)}
+                            className="w-5 h-5"
+                          />
+                          <label htmlFor="dialogue" className="text-base font-medium cursor-pointer">
+                            💬 Character Dialogue
+                          </label>
+                        </div>
                       </div>
-                    ))}
-                    
-                    {prompts.length < MAX_PROMPTS && (
-                      <Button variant="outline" onClick={addPrompt} className="w-full">
-                        ➕ Add Panel
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Button 
-                onClick={handleGenerate} 
-                disabled={prompts.some(p => !p.trim())} 
-                className="w-full h-12 text-lg"
-              >
-                🎨 Generate Enhanced Comic Story
-              </Button>
-            </div>
-          )}
-
-          {step === 'generating' && (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <div className="text-lg font-medium">Generating images and story...</div>
-              <div className="text-sm text-gray-600 mt-2">
-                Using {aiModel === 'auto' ? 'best available AI' : aiModel} to create your comic
-              </div>
-            </div>
-          )}
-
-          {step === 'preview' && comicUrl && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>🖼️ Generated Comic</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <img src={comicUrl} alt="Comic Preview" className="w-full rounded-lg border shadow-md" />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    📖 Generated Story
-                    {storyMetadata && (
-                      <Badge variant="outline" className="ml-auto">
-                        {storyMetadata.model} • {storyMetadata.style}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-4 bg-gray-50 rounded-lg border text-sm whitespace-pre-line leading-relaxed">
-                    {story}
-                  </div>
-                  {storyMetadata?.generatedAt && (
-                    <div className="text-xs text-gray-500 mt-2">
-                      Generated at: {new Date(storyMetadata.generatedAt).toLocaleString()}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    
+                    {aiModel === 'auto' && (
+                      <div className="p-4 bg-blue-500/10 border border-blue-200 dark:border-blue-400/30 rounded-xl text-blue-700 dark:text-blue-300 backdrop-blur-sm">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">✨</span>
+                          <span>Auto mode will try free services first (OpenRouter, HuggingFace, KoboldAI) before using premium APIs.</span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-              <NFTMetadataForm
-                nftName={nftName}
-                nftDescription={nftDescription}
-                onNameChange={setNftName}
-                onDescriptionChange={setNftDescription}
-              />
-              
-              <Button 
-                onClick={() => { setStep('minting'); mintNFT(); }} 
-                disabled={isLoading || !hasCredentials} 
-                className="w-full h-12 text-lg"
-              >
-                {isLoading ? '⏳ Minting...' : '🚀 Mint Comic NFT'}
-              </Button>
-            </div>
-          )}
+                {/* Story Prompts */}
+                <Card className="border-2 border-border/50 bg-accent/20 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
+                        📝
+                      </div>
+                      Story Prompts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {prompts.map((prompt, idx) => (
+                        <div key={idx} className="flex gap-4 items-center group">
+                          <div className="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary">
+                            {idx + 1}
+                          </div>
+                          <Input
+                            value={prompt}
+                            onChange={e => handlePromptChange(idx, e.target.value)}
+                            placeholder={`Panel ${idx + 1} - Describe the scene or action`}
+                            className="flex-1 h-12 text-base bg-background/50 border-2 focus:border-primary transition-all duration-200"
+                          />
+                          {prompts.length > MIN_PROMPTS && (
+                            <Button 
+                              variant="ghost" 
+                              onClick={() => removePrompt(idx)} 
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 w-10 h-10 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ✕
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {prompts.length < MAX_PROMPTS && (
+                        <Button 
+                          variant="outline" 
+                          onClick={addPrompt} 
+                          className="w-full h-12 text-base border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-all duration-200"
+                        >
+                          ➕ Add Panel ({prompts.length}/{MAX_PROMPTS})
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-          {step === 'minting' && (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-              <div className="text-lg font-medium">Minting your NFT...</div>
-              <div className="text-sm text-gray-600 mt-2">
-                This may take a few moments
+                <Button 
+                  onClick={handleGenerate} 
+                  disabled={prompts.some(p => !p.trim())} 
+                  size="lg"
+                  className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
+                  🎨 Generate Enhanced Comic Story
+                </Button>
               </div>
-            </div>
-          )}
+            )}
 
-          {hash && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="font-medium text-green-800">✅ Transaction Successful!</div>
-              <div className="text-sm text-green-600 mt-1 break-all">
-                Transaction Hash: {hash}
+            {step === 'generating' && (
+              <div className="text-center py-16">
+                <div className="relative mb-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto"></div>
+                  <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse"></div>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-2">Generating images and story...</div>
+                <div className="text-lg text-muted-foreground">
+                  Using {aiModel === 'auto' ? 'best available AI' : aiModel} to create your comic ✨
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+
+            {step === 'preview' && comicUrl && (
+              <div className="space-y-8">
+                <Card className="border-2 border-border/50 bg-accent/20 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-2xl flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
+                        🖼️
+                      </div>
+                      Generated Comic
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                      <img 
+                        src={comicUrl} 
+                        alt="Comic Preview" 
+                        className="relative w-full rounded-2xl border-2 border-border shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]" 
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-border/50 bg-accent/20 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
+                          📖
+                        </div>
+                        Generated Story
+                      </div>
+                      {storyMetadata && (
+                        <Badge variant="outline" className="text-base px-3 py-1">
+                          {storyMetadata.model} • {storyMetadata.style}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-6 bg-background/30 rounded-2xl border text-base whitespace-pre-line leading-relaxed backdrop-blur-sm">
+                      {story}
+                    </div>
+                    {storyMetadata?.generatedAt && (
+                      <div className="text-sm text-muted-foreground mt-3 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        Generated at: {new Date(storyMetadata.generatedAt).toLocaleString()}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <div className="bg-accent/30 backdrop-blur-sm rounded-2xl p-2 border">
+                  <NFTMetadataForm
+                    nftName={nftName}
+                    nftDescription={nftDescription}
+                    onNameChange={setNftName}
+                    onDescriptionChange={setNftDescription}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={() => { setStep('minting'); mintNFT(); }} 
+                  disabled={isLoading || !hasCredentials} 
+                  size="lg"
+                  className="w-full h-16 text-xl font-bold bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
+                  {isLoading ? '⏳ Minting...' : '🚀 Mint Comic NFT'}
+                </Button>
+              </div>
+            )}
+
+            {step === 'minting' && (
+              <div className="text-center py-16">
+                <div className="relative mb-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-500/20 border-t-emerald-500 mx-auto"></div>
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-pulse"></div>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-2">Minting your NFT...</div>
+                <div className="text-lg text-muted-foreground">
+                  This may take a few moments 🎯
+                </div>
+              </div>
+            )}
+
+            {hash && (
+              <div className="mt-6 p-6 bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/30 rounded-2xl backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                  </div>
+                  <div className="font-bold text-emerald-800 dark:text-emerald-300 text-lg">Transaction Successful!</div>
+                </div>
+                <div className="text-emerald-600 dark:text-emerald-400 break-all font-mono text-sm bg-emerald-500/5 p-3 rounded-lg">
+                  Transaction Hash: {hash}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

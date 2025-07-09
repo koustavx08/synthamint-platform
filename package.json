@@ -7,8 +7,10 @@
     "dev": "set \"NODE_OPTIONS=--max-old-space-size=4096\" && npm run clean:sourcemaps && vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint .",
+    "build:analyze": "npm run build && npm run analyze:bundle",
+    "analyze:bundle": "npx vite-bundle-analyzer dist",
     "preview": "vite preview",
+    "lint": "eslint .",
     "postinstall": "npm run clean:sourcemaps",
     "clean:sourcemaps": "node clean-sourcemaps.cjs",
     "contracts:install": "cd contracts && npm install",
@@ -17,7 +19,9 @@
     "contracts:deploy": "cd contracts && npm run deploy:fuji",
     "setup": "npm run contracts:install && npm run contracts:compile",
     "test:ai": "node scripts/test-ai-services.js",
-    "demo:ai": "npm run test:ai"
+    "demo:ai": "npm run test:ai",
+    "perf:lighthouse": "npx lighthouse http://localhost:8080 --output html --output-path ./lighthouse-report.html",
+    "perf:analyze": "npm run build && npm run perf:lighthouse"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -17,12 +17,50 @@ export interface ImageGenerationResult {
 
 export class AIImageService {
   private static instance: AIImageService;
-  
+  private cache = new Map<string, { result: ImageGenerationResult; timestamp: number }>();
+  private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+  private rateLimitCache = new Map<string, number>();
+  private readonly RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+
   public static getInstance(): AIImageService {
     if (!AIImageService.instance) {
       AIImageService.instance = new AIImageService();
     }
     return AIImageService.instance;
+  }
+
+  private getCacheKey(options: ImageGenerationOptions): string {
+    return `${options.prompt}-${options.size || '1024x1024'}-${options.style || 'vivid'}-${options.model || 'auto'}`;
+  }
+
+  private isRateLimited(service: string): boolean {
+    const lastCall = this.rateLimitCache.get(service);
+    if (!lastCall) return false;
+    return Date.now() - lastCall < this.RATE_LIMIT_WINDOW;
+  }
+
+  private setRateLimit(service: string): void {
+    this.rateLimitCache.set(service, Date.now());
+  }
+
+  private getCachedResult(options: ImageGenerationOptions): ImageGenerationResult | null {
+    const key = this.getCacheKey(options);
+    const cached = this.cache.get(key);
+    
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.result;
+    }
+    
+    if (cached) {
+      this.cache.delete(key); // Remove expired cache
+    }
+    
+    return null;
+  }
+
+  private setCachedResult(options: ImageGenerationOptions, result: ImageGenerationResult): void {
+    const key = this.getCacheKey(options);
+    this.cache.set(key, { result, timestamp: Date.now() });
   }
 
   /**
@@ -300,6 +338,13 @@ export class AIImageService {
    * Auto-select the best available AI service and generate an image
    */
   async generateImage(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
+    // Check cache first
+    const cachedResult = this.getCachedResult(options);
+    if (cachedResult) {
+      console.log('Returning cached result');
+      return cachedResult;
+    }
+
     const replicateKey = import.meta.env.VITE_REPLICATE_API_KEY;
     const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const stabilityKey = import.meta.env.VITE_STABILITY_AI_API_KEY;
@@ -310,11 +355,16 @@ export class AIImageService {
     const hasValidReplicate = replicateKey && replicateKey !== 'your_replicate_api_key_here';
 
     // Try Hugging Face first (FREE - No API key needed!)
-    try {
-      console.log('Trying Hugging Face (completely free)...');
-      return await this.generateWithHuggingFace(options);
-    } catch (error) {
-      console.warn('Hugging Face generation failed, trying paid services:', error);
+    if (!this.isRateLimited('huggingface')) {
+      try {
+        console.log('Trying Hugging Face (completely free)...');
+        this.setRateLimit('huggingface');
+        const result = await this.generateWithHuggingFace(options);
+        this.setCachedResult(options, result);
+        return result;
+      } catch (error) {
+        console.warn('Hugging Face generation failed, trying paid services:', error);
+      }
     }
 
     // If no valid API keys for paid services, return demo placeholder
@@ -323,18 +373,24 @@ export class AIImageService {
     }
 
     // Prefer Replicate for collaborative features (best for prompt blending)
-    if (hasValidReplicate && options.collaborativePrompts) {
+    if (hasValidReplicate && options.collaborativePrompts && !this.isRateLimited('replicate')) {
       try {
-        return await this.generateWithReplicate(options);
+        this.setRateLimit('replicate');
+        const result = await this.generateWithReplicate(options);
+        this.setCachedResult(options, result);
+        return result;
       } catch (error) {
         console.warn('Replicate generation failed, trying fallback:', error);
       }
     }
 
     // Try OpenAI for single prompts if available
-    if (hasValidOpenAI) {
+    if (hasValidOpenAI && !this.isRateLimited('openai')) {
       try {
-        return await this.generateWithOpenAI(options);
+        this.setRateLimit('openai');
+        const result = await this.generateWithOpenAI(options);
+        this.setCachedResult(options, result);
+        return result;
       } catch (error) {
         console.warn('OpenAI generation failed, trying fallback:', error);
         // If OpenAI fails due to quota/billing, try other services or demo
@@ -351,9 +407,12 @@ export class AIImageService {
     }
 
     // Fallback to Stability AI
-    if (hasValidStability) {
+    if (hasValidStability && !this.isRateLimited('stability')) {
       try {
-        return await this.generateWithStabilityAI(options);
+        this.setRateLimit('stability');
+        const result = await this.generateWithStabilityAI(options);
+        this.setCachedResult(options, result);
+        return result;
       } catch (error) {
         console.warn('Stability AI generation failed:', error);
         // Check for specific billing/balance errors
