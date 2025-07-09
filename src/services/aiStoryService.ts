@@ -374,7 +374,7 @@ export class AIStoryService {
   }
 
   /**
-   * Generate story using Gemini (updated with new parameters)
+   * Generate story using Gemini (updated with correct model name)
    */
   private async generateWithGemini(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -384,31 +384,74 @@ export class AIStoryService {
     
     const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: `${systemPrompt}\n\nPrompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}` }] }
-        ]
-      }),
-    });
+    // Try different available Gemini models
+    const models = [
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-1.0-pro'
+    ];
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.warn('Gemini story generation failed:', errorData);
-      throw new Error(errorData.error?.message || 'Failed to generate story with Gemini');
+    for (const model of models) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { 
+                role: 'user', 
+                parts: [{ 
+                  text: `${systemPrompt}\n\nPrompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}` 
+                }] 
+              }
+            ],
+            generationConfig: {
+              temperature: 0.8,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 800,
+            }
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.warn(`Gemini model ${model} failed:`, errorData);
+          
+          // If this model is not found, try the next one
+          if (errorData.error?.message?.includes('not found') || 
+              errorData.error?.message?.includes('not supported')) {
+            continue;
+          }
+          
+          // For other errors, throw
+          throw new Error(errorData.error?.message || `Failed to generate story with Gemini ${model}`);
+        }
+        
+        const data = await response.json();
+        
+        // Check if we got a valid response
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+          return {
+            story: data.candidates[0].content.parts[0].text.trim(),
+            metadata: {
+              model: `gemini-${model}`,
+              generatedAt: new Date().toISOString(),
+              style: useComicStyle ? 'comic' : 'narrative'
+            }
+          };
+        } else {
+          console.warn(`Gemini model ${model} returned invalid response:`, data);
+          continue;
+        }
+      } catch (error) {
+        console.warn(`Gemini model ${model} failed:`, error);
+        continue;
+      }
     }
     
-    const data = await response.json();
-    return {
-      story: data.candidates[0].content.parts[0].text.trim(),
-      metadata: {
-        model: 'gemini',
-        generatedAt: new Date().toISOString(),
-        style: useComicStyle ? 'comic' : 'narrative'
-      }
-    };
+    // If all models failed, throw an error
+    throw new Error('All Gemini models failed or are not available');
   }
 
   /**
@@ -606,6 +649,36 @@ export class AIStoryService {
         style: useComicStyle ? 'comic' : 'narrative'
       }
     };
+  }
+
+  /**
+   * Check available Gemini models (utility method for debugging)
+   */
+  async checkAvailableGeminiModels(): Promise<string[]> {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      return [];
+    }
+    
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      
+      if (!response.ok) {
+        console.warn('Failed to fetch Gemini models:', response.statusText);
+        return [];
+      }
+      
+      const data = await response.json();
+      const models = data.models
+        ?.filter((model: any) => model.supportedGenerationMethods?.includes('generateContent'))
+        ?.map((model: any) => model.name.replace('models/', '')) || [];
+      
+      console.log('Available Gemini models:', models);
+      return models;
+    } catch (error) {
+      console.warn('Error checking Gemini models:', error);
+      return [];
+    }
   }
 }
 

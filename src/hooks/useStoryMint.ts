@@ -17,27 +17,42 @@ export function useStoryMint() {
           chain: avalancheFuji,
           transport: http(),
         });
-        // Get total supply
+        
+        // Get total supply using the now-available function
         const totalSupply: bigint = await client.readContract({
           address: NFT_CONTRACT_ADDRESS,
           abi: NFT_CONTRACT_ABI,
           functionName: 'totalSupply',
         });
+
+        if (Number(totalSupply) === 0) {
+          setComics([]);
+          return;
+        }
+
         // Get all tokenIds using tokenByIndex
         const tokenIds = await Promise.all(
           Array.from({ length: Number(totalSupply) }, async (_, i) => {
-            const tokenId: bigint = await client.readContract({
-              address: NFT_CONTRACT_ADDRESS,
-              abi: NFT_CONTRACT_ABI,
-              functionName: 'tokenByIndex',
-              args: [BigInt(i)],
-            });
-            return tokenId;
+            try {
+              const tokenId: bigint = await client.readContract({
+                address: NFT_CONTRACT_ADDRESS,
+                abi: NFT_CONTRACT_ABI,
+                functionName: 'tokenByIndex',
+                args: [BigInt(i)],
+              });
+              return tokenId;
+            } catch (error) {
+              console.warn(`Failed to get token at index ${i}:`, error);
+              return null;
+            }
           })
         );
+
+        const validTokenIds = tokenIds.filter((id): id is bigint => id !== null);
+
         // Fetch tokenURIs and metadata
         const comicsData = await Promise.all(
-          tokenIds.map(async (tokenId) => {
+          validTokenIds.map(async (tokenId) => {
             try {
               const tokenURI: string = await client.readContract({
                 address: NFT_CONTRACT_ADDRESS,
@@ -45,28 +60,38 @@ export function useStoryMint() {
                 functionName: 'tokenURI',
                 args: [tokenId],
               });
+              
               const url = tokenURI.replace('ipfs://', 'https://ipfs.io/ipfs/');
               const res = await fetch(url);
+              
+              if (!res.ok) {
+                throw new Error(`Failed to fetch metadata for token ${tokenId}: ${res.statusText}`);
+              }
+              
               const meta = await res.json();
+              
+              // Check if this is a comic NFT
               if (
                 meta.type === 'ComicNFT' ||
                 (meta.attributes && meta.attributes.some((a: any) => a.trait_type === 'Type' && a.value === 'ComicNFT'))
               ) {
                 return {
                   tokenId: tokenId.toString(),
-                  name: meta.name,
-                  description: meta.description,
+                  name: meta.name || `Comic NFT #${tokenId.toString()}`,
+                  description: meta.description || 'AI-generated comic NFT',
                   image: meta.image?.replace('ipfs://', 'https://ipfs.io/ipfs/'),
-                  story: meta.story,
+                  story: meta.story || 'No story available',
                   ...meta,
                 };
               }
               return null;
-            } catch {
+            } catch (error) {
+              console.warn(`Failed to fetch metadata for token ${tokenId}:`, error);
               return null;
             }
           })
         );
+
         setComics(comicsData.filter(Boolean));
       } catch (e: any) {
         setError(e.message || 'Failed to load comics');

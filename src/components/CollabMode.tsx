@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { useAccount } from 'wagmi';
 import { Copy, Users, Loader, Check, X, Palette, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 import { collabSocket, CollabSession } from '../services/collabSocket';
 import { aiImageService } from '@/services/aiImageService';
 import CollabNFTMinter from './CollabNFTMinter';
@@ -31,6 +32,7 @@ const CollabMode = () => {
   
   const { address } = useAccount();
   const { toast } = useToast();
+  const { actualTheme } = useTheme();
 
   useEffect(() => {
     if (address) {
@@ -264,21 +266,21 @@ const CollabMode = () => {
 
   if (!address) {
     return (
-      <Card className="overflow-hidden border-0 shadow-xl bg-white">
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+      <Card className="overflow-hidden border-0 shadow-xl bg-card">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 p-6">
           <div className="text-center">
             <Users className="w-12 h-12 mx-auto mb-4 text-white" />
             <h3 className="text-2xl font-bold text-white">Collaborative Art</h3>
-            <p className="text-purple-100 mt-1">Create NFTs together with friends</p>
+            <p className="text-purple-100 dark:text-purple-200 mt-1">Create NFTs together with friends</p>
           </div>
         </div>
         <div className="p-6 text-center">
           <div className="max-w-sm mx-auto">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-2">Connect Your Wallet</h4>
-            <p className="text-gray-600">
+            <h4 className="text-lg font-semibold text-foreground mb-2">Connect Your Wallet</h4>
+            <p className="text-muted-foreground">
               Connect your wallet to start creating collaborative artwork with other artists.
             </p>
           </div>
@@ -289,26 +291,26 @@ const CollabMode = () => {
 
   if (mode === 'menu') {
     return (
-      <Card className="overflow-hidden border-0 shadow-xl bg-white">
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+      <Card className="overflow-hidden border-0 shadow-xl bg-card">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 p-6">
           <div className="text-center">
             <Users className="w-12 h-12 mx-auto mb-4 text-white" />
             <h3 className="text-2xl font-bold text-white">Collaborative Art</h3>
-            <p className="text-purple-100 mt-1">Create NFTs together with other artists</p>
+            <p className="text-purple-100 dark:text-purple-200 mt-1">Create NFTs together with other artists</p>
           </div>
         </div>
 
         <div className="p-6 space-y-6">
           {/* Demo mode indicator */}
           {isDemoMode && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 text-sm font-semibold">ℹ</span>
+                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 text-sm font-semibold">ℹ</span>
                 </div>
                 <div>
-                  <h4 className="text-blue-800 font-semibold text-sm mb-1">Demo Mode Active</h4>
-                  <p className="text-blue-700 text-sm">
+                  <h4 className="text-blue-800 dark:text-blue-200 font-semibold text-sm mb-1">Demo Mode Active</h4>
+                  <p className="text-blue-700 dark:text-blue-300 text-sm">
                     You're using a demo version of collaboration features. Real-time sync is simulated.
                   </p>
                 </div>
@@ -318,15 +320,15 @@ const CollabMode = () => {
 
           {/* Auto-join indicator */}
           {joinSessionId && joinSessionId.trim() !== '' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Users className="w-4 h-4 text-blue-600" />
+                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h4 className="text-blue-800 font-semibold text-sm mb-1">Joining Collaboration</h4>
-                  <p className="text-blue-700 text-sm">
-                    Connecting to session: <code className="bg-blue-100 px-1 rounded text-xs">{joinSessionId}</code>
+                  <h4 className="text-blue-800 dark:text-blue-200 font-semibold text-sm mb-1">Joining Collaboration</h4>
+                  <p className="text-blue-700 dark:text-blue-300 text-sm">
+                    Connecting to session: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-xs">{joinSessionId}</code>
                   </p>
                 </div>
               </div>
@@ -334,18 +336,18 @@ const CollabMode = () => {
           )}
 
           {socketError && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
-                  <span className="text-amber-600 text-sm font-semibold">!</span>
+                <div className="flex-shrink-0 w-6 h-6 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">!</span>
                 </div>
                 <div>
-                  <h4 className="text-amber-800 font-semibold text-sm mb-1">Collaboration Unavailable</h4>
-                  <p className="text-amber-700 text-sm mb-2">
+                  <h4 className="text-amber-800 dark:text-amber-200 font-semibold text-sm mb-1">Collaboration Unavailable</h4>
+                  <p className="text-amber-700 dark:text-amber-300 text-sm mb-2">
                     Real-time collaboration features require a socket server configuration.
                   </p>
-                  <p className="text-amber-600 text-xs">
-                    Add <code className="bg-amber-100 px-1 rounded">VITE_SOCKET_URL</code> to your environment variables to enable collaboration.
+                  <p className="text-amber-600 dark:text-amber-400 text-xs">
+                    Add <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">VITE_SOCKET_URL</code> to your environment variables to enable collaboration.
                   </p>
                 </div>
               </div>
@@ -356,7 +358,7 @@ const CollabMode = () => {
             onClick={createSession}
             disabled={isConnecting || !!socketError}
             size="lg"
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 dark:from-purple-700 dark:to-pink-700 dark:hover:from-purple-800 dark:hover:to-pink-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
           >
             {isConnecting ? (
               <>
@@ -378,22 +380,22 @@ const CollabMode = () => {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
+              <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-gray-500 font-medium">Or join existing</span>
+              <span className="bg-card px-3 text-muted-foreground font-medium">Or join existing</span>
             </div>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700">
+            <label className="block text-sm font-semibold text-foreground">
               Session ID
             </label>
             <Input
               placeholder="Enter session ID to join collaboration"
               value={joinSessionId}
               onChange={(e) => setJoinSessionId(e.target.value)}
-              className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+              className="border-border focus:border-ring focus:ring-ring"
               disabled={!!socketError}
             />
             <Button
@@ -401,7 +403,7 @@ const CollabMode = () => {
               disabled={isConnecting || !joinSessionId.trim() || !!socketError}
               variant="outline"
               size="lg"
-              className="w-full h-12 border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 font-semibold disabled:opacity-50"
+              className="w-full h-12 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-800 dark:hover:text-purple-200 font-semibold disabled:opacity-50"
             >
               Join Collaboration
             </Button>
@@ -414,22 +416,22 @@ const CollabMode = () => {
   return (
     <div className="space-y-8">
       {/* Session Info */}
-      <Card className="overflow-hidden border-0 shadow-xl bg-white">
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4">
+      <Card className="overflow-hidden border-0 shadow-xl bg-card">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-bold text-white text-lg">
                 {isHost ? 'Hosting Collaboration' : 'Joined Collaboration'}
               </h4>
-              <p className="text-emerald-100 text-sm">
+              <p className="text-emerald-100 dark:text-emerald-200 text-sm">
                 Session ID: {session?.id}
               </p>
             </div>
             <div className="flex items-center space-x-3">
               <div className={`w-3 h-3 rounded-full ${
-                session?.guest ? 'bg-green-300' : 'bg-yellow-300'
+                session?.guest ? 'bg-green-300 dark:bg-green-400' : 'bg-yellow-300 dark:bg-yellow-400'
               }`} />
-              <span className="text-emerald-100 text-sm font-medium">
+              <span className="text-emerald-100 dark:text-emerald-200 text-sm font-medium">
                 {session?.guest ? '2/2 Connected' : '1/2 Waiting'}
               </span>
             </div>
@@ -437,21 +439,21 @@ const CollabMode = () => {
         </div>
         
         {isHost && sessionLink && (
-          <div className="p-4 bg-gray-50">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="p-4 bg-muted/50">
+            <label className="block text-sm font-semibold text-foreground mb-2">
               Share this link with your collaborator
             </label>
             <div className="flex items-center space-x-2">
               <Input
                 value={sessionLink}
                 readOnly
-                className="border-gray-200 text-gray-700 bg-white text-sm"
+                className="border-border text-foreground bg-background text-sm"
               />
               <Button
                 onClick={copySessionLink}
                 size="sm"
                 variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                className="border-border text-foreground hover:bg-accent"
               >
                 <Copy className="w-4 h-4" />
               </Button>
@@ -462,41 +464,41 @@ const CollabMode = () => {
 
       {/* Prompting Phase */}
       {session?.status === 'waiting' || session?.status === 'prompting' ? (
-        <Card className="overflow-hidden border-0 shadow-xl bg-white">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+        <Card className="overflow-hidden border-0 shadow-xl bg-card">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 p-6">
             <h4 className="text-2xl font-bold text-white">Creative Collaboration</h4>
-            <p className="text-blue-100 mt-1">Share your creative vision</p>
+            <p className="text-blue-100 dark:text-blue-200 mt-1">Share your creative vision</p>
           </div>
           
           <div className="p-6 space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 Your Creative Prompt
               </label>
               <Textarea
                 placeholder="Describe your artistic vision in detail..."
                 value={myPrompt}
                 onChange={(e) => updatePrompt(e.target.value)}
-                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-[120px]"
+                className="border-border focus:border-ring focus:ring-ring min-h-[120px]"
               />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-semibold text-gray-700 mb-2 flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="font-semibold text-foreground mb-2 flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mr-2"></div>
                   Host Prompt
                 </p>
-                <p className="text-gray-600 text-sm bg-white p-3 rounded border">
+                <p className="text-muted-foreground text-sm bg-background p-3 rounded border border-border">
                   {session?.hostPrompt || 'Waiting for host prompt...'}
                 </p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-semibold text-gray-700 mb-2 flex items-center">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="font-semibold text-foreground mb-2 flex items-center">
+                  <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full mr-2"></div>
                   Guest Prompt
                 </p>
-                <p className="text-gray-600 text-sm bg-white p-3 rounded border">
+                <p className="text-muted-foreground text-sm bg-background p-3 rounded border border-border">
                   {session?.guestPrompt || 'Waiting for guest prompt...'}
                 </p>
               </div>
@@ -504,18 +506,18 @@ const CollabMode = () => {
 
             {/* Advanced Blending Options */}
             {canGenerate && (
-              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-blue-200 dark:border-blue-800">
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h5 className="font-semibold text-gray-700 flex items-center">
-                      <Palette className="w-4 h-4 mr-2 text-blue-600" />
+                    <h5 className="font-semibold text-foreground flex items-center">
+                      <Palette className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
                       AI Blending Controls
                     </h5>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                      className="text-blue-600 hover:text-blue-700"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                     >
                       <Sparkles className="w-4 h-4 mr-1" />
                       {showAdvancedOptions ? 'Hide' : 'Show'} Advanced
@@ -524,13 +526,13 @@ const CollabMode = () => {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Blending Strategy
                       </label>
                       <Select value={blendingStrategy} onValueChange={(value: any) => {
                         updateBlendingOptions(value, [promptWeight[0] / 100, 1 - promptWeight[0] / 100]);
                       }}>
-                        <SelectTrigger className="border-blue-200 focus:border-blue-400">
+                        <SelectTrigger className="border-blue-200 dark:border-blue-700 focus:border-blue-400 dark:focus:border-blue-500">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -544,7 +546,7 @@ const CollabMode = () => {
 
                     {(blendingStrategy === 'weighted' || showAdvancedOptions) && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Prompt Balance: Host {promptWeight[0]}% - Guest {100 - promptWeight[0]}%
                         </label>
                         <Slider
@@ -558,7 +560,7 @@ const CollabMode = () => {
                           step={5}
                           className="w-full"
                         />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
                           <span>More Host Influence</span>
                           <span>More Guest Influence</span>
                         </div>
@@ -566,17 +568,17 @@ const CollabMode = () => {
                     )}
 
                     {showAdvancedOptions && (
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-blue-200">
-                        <div className="text-xs text-gray-600">
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-blue-200 dark:border-blue-700">
+                        <div className="text-xs text-muted-foreground">
                           <strong>Fusion:</strong> Creates harmonious artistic synthesis
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-muted-foreground">
                           <strong>Style Transfer:</strong> Uses host as content, guest as style
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-muted-foreground">
                           <strong>Merge:</strong> Simple prompt concatenation
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-muted-foreground">
                           <strong>Weighted:</strong> Custom attention weights
                         </div>
                       </div>
@@ -591,7 +593,7 @@ const CollabMode = () => {
                 onClick={() => generateCollabImage(session)}
                 disabled={isGenerating}
                 size="lg"
-                className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 dark:from-blue-700 dark:via-purple-700 dark:to-pink-700 dark:hover:from-blue-800 dark:hover:via-purple-800 dark:hover:to-pink-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {isGenerating ? (
                   <>
@@ -612,10 +614,10 @@ const CollabMode = () => {
 
       {/* Image Approval Phase */}
       {session?.generatedImage && session?.status === 'approving' && (
-        <Card className="overflow-hidden border-0 shadow-xl bg-white">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6">
+        <Card className="overflow-hidden border-0 shadow-xl bg-card">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700 p-6">
             <h4 className="text-2xl font-bold text-white">Review & Approve</h4>
-            <p className="text-amber-100 mt-1">Both collaborators must approve to proceed</p>
+            <p className="text-amber-100 dark:text-amber-200 mt-1">Both collaborators must approve to proceed</p>
           </div>
           
           <div className="p-6 space-y-6">
@@ -630,22 +632,22 @@ const CollabMode = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h5 className="font-semibold text-gray-700 mb-3 text-center">Approval Status</h5>
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h5 className="font-semibold text-foreground mb-3 text-center">Approval Status</h5>
               <div className="flex items-center justify-center space-x-8">
                 <div className="text-center">
                   <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-                    session.hostApproved ? 'bg-green-500' : 'bg-gray-300'
+                    session.hostApproved ? 'bg-green-500 dark:bg-green-400' : 'bg-muted dark:bg-muted'
                   }`} />
-                  <p className="text-sm font-medium text-gray-700">Host</p>
-                  {session.hostApproved && <p className="text-xs text-green-600">Approved</p>}
+                  <p className="text-sm font-medium text-foreground">Host</p>
+                  {session.hostApproved && <p className="text-xs text-green-600 dark:text-green-400">Approved</p>}
                 </div>
                 <div className="text-center">
                   <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-                    session.guestApproved ? 'bg-green-500' : 'bg-gray-300'
+                    session.guestApproved ? 'bg-green-500 dark:bg-green-400' : 'bg-muted dark:bg-muted'
                   }`} />
-                  <p className="text-sm font-medium text-gray-700">Guest</p>
-                  {session.guestApproved && <p className="text-xs text-green-600">Approved</p>}
+                  <p className="text-sm font-medium text-foreground">Guest</p>
+                  {session.guestApproved && <p className="text-xs text-green-600 dark:text-green-400">Approved</p>}
                 </div>
               </div>
             </div>
@@ -656,7 +658,7 @@ const CollabMode = () => {
                   onClick={() => handleApproval(false)}
                   variant="outline"
                   size="lg"
-                  className="flex-1 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                  className="flex-1 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-800 dark:hover:text-red-300"
                 >
                   <X className="w-5 h-5 mr-2" />
                   Reject Artwork
@@ -664,7 +666,7 @@ const CollabMode = () => {
                 <Button
                   onClick={() => handleApproval(true)}
                   size="lg"
-                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-700 dark:to-emerald-700 dark:hover:from-green-800 dark:hover:to-emerald-800 text-white font-semibold"
                 >
                   <Check className="w-5 h-5 mr-2" />
                   Approve Artwork
@@ -673,7 +675,7 @@ const CollabMode = () => {
             )}
 
             {bothApproved && (
-              <div className="bg-green-50 rounded-xl p-1">
+              <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-1">
                 <CollabNFTMinter
                   imageUrl={session.generatedImage}
                   hostPrompt={session.hostPrompt!}

@@ -124,20 +124,17 @@ export default defineConfig(({ mode }) => ({
         if (warning.message?.includes('source map')) return;
         if (warning.message?.includes('Unexpected end of file')) return;
         if (warning.message?.includes('sourceMappingURL')) return;
+        // Suppress package resolution warnings
+        if (warning.code === 'UNRESOLVED_IMPORT') return;
         warn(warning);
       },
       output: {
         manualChunks: {
-          // Core React chunks
           'react-vendor': ['react', 'react-dom'],
-          // UI library
-          'radix-ui': ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio', '@radix-ui/react-avatar', '@radix-ui/react-checkbox', '@radix-ui/react-collapsible', '@radix-ui/react-context-menu', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-hover-card', '@radix-ui/react-label', '@radix-ui/react-menubar', '@radix-ui/react-navigation-menu', '@radix-ui/react-popover', '@radix-ui/react-progress', '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area', '@radix-ui/react-select', '@radix-ui/react-separator', '@radix-ui/react-slider', '@radix-ui/react-slot', '@radix-ui/react-switch', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/react-toggle', '@radix-ui/react-toggle-group', '@radix-ui/react-tooltip'],
-          // Web3 related
-          'web3-vendor': ['wagmi', '@wagmi/core', '@wagmi/connectors', 'viem'],
-          // Routing and forms
-          'router-forms': ['react-router-dom', 'react-hook-form', '@hookform/resolvers', 'zod'],
-          // Utils and miscellaneous
-          'utils': ['clsx', 'tailwind-merge', 'date-fns', 'lucide-react']
+          'ui-vendor': ['lucide-react'],
+          'web3-vendor': ['wagmi', 'viem'],
+          'router-vendor': ['react-router-dom'],
+          'query-vendor': ['@tanstack/react-query'],
         },
       },
     },
@@ -147,18 +144,17 @@ export default defineConfig(({ mode }) => ({
       '@safe-global/safe-apps-sdk',
       '@lit/reactive-element'
     ],
-    include: ['react', 'react-dom'],
+    include: [
+      'react', 
+      'react-dom'
+    ],
     esbuildOptions: {
-      // Completely ignore source map annotations and processing
-      ignoreAnnotations: true,
+      target: 'esnext',
       sourcemap: false,
       logOverride: {
         'js-comment-in-json': 'silent',
         'unsupported-source-map-comment': 'silent',
       },
-      // Disable source map loading entirely
-      sourceRoot: '',
-      sourcesContent: false,
     },
   },
   define: {
