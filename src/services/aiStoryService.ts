@@ -1,10 +1,18 @@
 export interface StoryGenerationOptions {
   prompts: string[];
-  model?: 'openai' | 'gemini';
+  model?: 'openai' | 'gemini' | 'openrouter' | 'koboldai' | 'huggingface-spaces' | 'auto';
+  useComicStyle?: boolean;
+  characterDialogue?: boolean;
 }
 
 export interface StoryGenerationResult {
   story: string;
+  metadata?: {
+    model: string;
+    generatedAt: string;
+    tokenCount?: number;
+    style?: string;
+  };
 }
 
 export class AIStoryService {
@@ -18,42 +26,56 @@ export class AIStoryService {
   }
 
   async generateStory(options: StoryGenerationOptions): Promise<StoryGenerationResult> {
-    const { prompts, model } = options;
+    const { prompts, model, useComicStyle = true, characterDialogue = false } = options;
     
-    // Auto-select the best available AI service if no model specified
-    if (!model) {
-      return this.autoSelectAndGenerate(prompts);
+    // Auto-select the best available AI service if no model specified or 'auto'
+    if (!model || model === 'auto') {
+      return this.autoSelectAndGenerate(prompts, useComicStyle, characterDialogue);
     }
     
     // Use specified model
-    if (model === 'openai') {
-      return this.generateWithOpenAI(prompts);
-    } else {
-      return this.generateWithGemini(prompts);
+    switch (model) {
+      case 'openai':
+        return this.generateWithOpenAI(prompts, useComicStyle, characterDialogue);
+      case 'gemini':
+        return this.generateWithGemini(prompts, useComicStyle, characterDialogue);
+      case 'openrouter':
+        return this.generateWithOpenRouter(prompts, useComicStyle, characterDialogue);
+      case 'koboldai':
+        return this.generateWithKoboldAI(prompts, useComicStyle, characterDialogue);
+      case 'huggingface-spaces':
+        return this.generateWithHuggingFaceSpaces(prompts, useComicStyle, characterDialogue);
+      default:
+        return this.autoSelectAndGenerate(prompts, useComicStyle, characterDialogue);
     }
   }
 
   /**
    * Auto-select the best available AI service for story generation
    */
-  private async autoSelectAndGenerate(prompts: string[]): Promise<StoryGenerationResult> {
+  private async autoSelectAndGenerate(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const openrouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     
-    // Try Free AI first (Truly FREE - No API key needed!)
-    try {
-      console.log('Trying Free AI story generation (completely free)...');
-      return await this.generateWithFreeAI(prompts);
-    } catch (error) {
-      console.warn('Free AI story generation failed, trying Hugging Face:', error);
-    }
+    // Try free services first in order of quality/reliability
+    const freeServices = [
+      () => this.generateWithOpenRouter(prompts, useComicStyle, characterDialogue),
+      () => this.generateWithHuggingFaceSpaces(prompts, useComicStyle, characterDialogue),
+      () => this.generateWithKoboldAI(prompts, useComicStyle, characterDialogue),
+      () => this.generateWithFreeAI(prompts, useComicStyle, characterDialogue),
+      () => this.generateWithHuggingFace(prompts, useComicStyle, characterDialogue)
+    ];
 
-    // Try Hugging Face second (FREE but may require auth)
-    try {
-      console.log('Trying Hugging Face for story generation (free)...');
-      return await this.generateWithHuggingFace(prompts);
-    } catch (error) {
-      console.warn('Hugging Face story generation failed, trying paid services:', error);
+    // Try each free service
+    for (const service of freeServices) {
+      try {
+        console.log('Trying free AI service...');
+        return await service();
+      } catch (error) {
+        console.warn('Free service failed, trying next:', error);
+        continue;
+      }
     }
     
     // Check if we have valid API keys for paid services
@@ -62,53 +84,55 @@ export class AIStoryService {
     
     // If no valid API keys for paid services, return demo
     if (!hasValidOpenAI && !hasValidGemini) {
-      return this.generateDemoStory(prompts);
+      return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
     }
     
     // Prefer OpenAI for better reliability and quality
     if (hasValidOpenAI) {
       try {
-        return await this.generateWithOpenAI(prompts);
+        return await this.generateWithOpenAI(prompts, useComicStyle, characterDialogue);
       } catch (error) {
         console.warn('OpenAI story generation failed, trying Gemini fallback:', error);
         
         // If OpenAI fails and we have Gemini, try it
         if (hasValidGemini) {
           try {
-            return await this.generateWithGemini(prompts);
+            return await this.generateWithGemini(prompts, useComicStyle, characterDialogue);
           } catch (geminiError) {
             console.warn('Gemini fallback also failed, using demo:', geminiError);
-            return this.generateDemoStory(prompts);
+            return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
           }
         }
         
         // No Gemini available, use demo
-        return this.generateDemoStory(prompts);
+        return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
       }
     }
     
     // Only Gemini available
     if (hasValidGemini) {
       try {
-        return await this.generateWithGemini(prompts);
+        return await this.generateWithGemini(prompts, useComicStyle, characterDialogue);
       } catch (error) {
         console.warn('Gemini story generation failed, using demo:', error);
-        return this.generateDemoStory(prompts);
+        return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
       }
     }
     
     // Final fallback
-    return this.generateDemoStory(prompts);
+    return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
   }
 
   /**
    * Generate story using OpenAI
    */
-  private async generateWithOpenAI(prompts: string[]): Promise<StoryGenerationResult> {
+  private async generateWithOpenAI(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     if (!apiKey || apiKey === 'your_openai_api_key_here') {
-      return this.generateDemoStory(prompts);
+      return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
     }
+    
+    const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -119,7 +143,7 @@ export class AIStoryService {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a creative comic story writer. Given a sequence of prompts, write a connected, engaging, and imaginative story that links all prompts as a narrative arc. Return only the story.' },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: `Prompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}` }
         ],
         max_tokens: 800,
@@ -136,31 +160,236 @@ export class AIStoryService {
           errorData.error?.message?.includes('billing') ||
           errorData.error?.message?.includes('insufficient')) {
         console.warn('OpenAI quota/billing issue, falling back to demo mode');
-        return this.generateDemoStory(prompts);
+        return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
       }
       
       throw new Error(errorData.error?.message || 'Failed to generate story with OpenAI');
     }
     
     const data = await response.json();
-    return { story: data.choices[0].message.content.trim() };
+    return {
+      story: data.choices[0].message.content.trim(),
+      metadata: {
+        model: 'openai',
+        generatedAt: new Date().toISOString(),
+        tokenCount: data.usage?.total_tokens,
+        style: useComicStyle ? 'comic' : 'narrative'
+      }
+    };
   }
 
   /**
-   * Generate story using Gemini
+   * Build system prompt based on style preferences
    */
-  private async generateWithGemini(prompts: string[]): Promise<StoryGenerationResult> {
+  private buildSystemPrompt(useComicStyle: boolean, characterDialogue: boolean): string {
+    let prompt = "You are a creative storyteller. ";
+    
+    if (useComicStyle) {
+      prompt += "Write stories in a visual, comic book style with vivid descriptions and dynamic scenes. ";
+    }
+    
+    if (characterDialogue) {
+      prompt += "Include realistic character dialogue and interactions. ";
+    }
+    
+    prompt += "Given a sequence of prompts, write a connected, engaging, and imaginative story that links all prompts as a narrative arc. Keep the story engaging and appropriate for all audiences. Return only the story text.";
+    
+    return prompt;
+  }
+
+  /**
+   * Generate story using OpenRouter.ai (Free GPT-style models)
+   */
+  private async generateWithOpenRouter(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
+    try {
+      // Try without API key first (some models are free)
+      const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
+      const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'Dream Mint Verse'
+      };
+      
+      if (apiKey && apiKey !== 'your_openrouter_api_key_here') {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+      
+      // Use free models like MythoMax or Mistral
+      const models = [
+        'mythologies/mythomax-l2-13b',
+        'mistralai/mistral-7b-instruct',
+        'openchat/openchat-7b',
+        'huggingfaceh4/zephyr-7b-beta'
+      ];
+      
+      const model = models[Math.floor(Math.random() * models.length)];
+      
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Create a story using these elements: ${prompts.join(', ')}` }
+          ],
+          max_tokens: 800,
+          temperature: 0.8
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenRouter failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const story = data.choices?.[0]?.message?.content?.trim() || '';
+      
+      return {
+        story,
+        metadata: {
+          model: 'openrouter',
+          generatedAt: new Date().toISOString(),
+          style: useComicStyle ? 'comic' : 'narrative'
+        }
+      };
+    } catch (error) {
+      console.warn('OpenRouter story generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate story using KoboldAI
+   */
+  private async generateWithKoboldAI(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
+    try {
+      // Try KoboldAI United endpoint (free community models)
+      const prompt = `${this.buildSystemPrompt(useComicStyle, characterDialogue)}\n\nPrompts: ${prompts.join(', ')}\n\nStory:`;
+      
+      const response = await fetch('https://koboldai-united.herokuapp.com/api/v1/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          max_length: 200,
+          temperature: 0.8,
+          top_p: 0.9,
+          rep_pen: 1.1
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`KoboldAI failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const story = data.results?.[0]?.text?.trim() || '';
+      
+      return {
+        story,
+        metadata: {
+          model: 'koboldai',
+          generatedAt: new Date().toISOString(),
+          style: useComicStyle ? 'comic' : 'narrative'
+        }
+      };
+    } catch (error) {
+      console.warn('KoboldAI story generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate story using HuggingFace Spaces (Free inference endpoints)
+   */
+  private async generateWithHuggingFaceSpaces(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
+    try {
+      // Try various HuggingFace Spaces for text generation
+      const spaces = [
+        'https://huggingface.co/spaces/microsoft/DialoGPT-medium',
+        'https://huggingface.co/spaces/facebook/blenderbot-400M-distill'
+      ];
+      
+      const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
+      const input = `${systemPrompt}\n\nCreate a story with: ${prompts.join(', ')}`;
+      
+      // Try the Inference API with various models
+      const models = [
+        'microsoft/DialoGPT-medium',
+        'facebook/blenderbot-400M-distill',
+        'EleutherAI/gpt-neo-1.3B'
+      ];
+      
+      for (const model of models) {
+        try {
+          const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              inputs: input,
+              parameters: {
+                max_length: 300,
+                temperature: 0.8,
+                do_sample: true,
+                top_p: 0.9
+              }
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            let story = '';
+            
+            if (Array.isArray(data)) {
+              story = data[0]?.generated_text || data[0]?.text || '';
+            } else {
+              story = data.generated_text || data.text || '';
+            }
+            
+            if (story && story.length > 10) {
+              return {
+                story: story.trim(),
+                metadata: {
+                  model: 'huggingface-spaces',
+                  generatedAt: new Date().toISOString(),
+                  style: useComicStyle ? 'comic' : 'narrative'
+                }
+              };
+            }
+          }
+        } catch (modelError) {
+          console.warn(`HuggingFace model ${model} failed:`, modelError);
+          continue;
+        }
+      }
+      
+      throw new Error('All HuggingFace models failed');
+    } catch (error) {
+      console.warn('HuggingFace Spaces story generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate story using Gemini (updated with new parameters)
+   */
+  private async generateWithGemini(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-      return this.generateDemoStory(prompts);
+      return this.generateDemoStory(prompts, useComicStyle, characterDialogue);
     }
+    
+    const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [
-          { role: 'user', parts: [{ text: `Write a connected, imaginative comic story using these prompts as a narrative arc. Prompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}` }] }
+          { role: 'user', parts: [{ text: `${systemPrompt}\n\nPrompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}` }] }
         ]
       }),
     });
@@ -172,56 +401,49 @@ export class AIStoryService {
     }
     
     const data = await response.json();
-    return { story: data.candidates[0].content.parts[0].text.trim() };
+    return {
+      story: data.candidates[0].content.parts[0].text.trim(),
+      metadata: {
+        model: 'gemini',
+        generatedAt: new Date().toISOString(),
+        style: useComicStyle ? 'comic' : 'narrative'
+      }
+    };
   }
 
   /**
-   * Generate story using a truly free AI service
+   * Enhanced Free AI generation with better templates
    */
-  private async generateWithFreeAI(prompts: string[]): Promise<StoryGenerationResult> {
+  private async generateWithFreeAI(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     try {
-      // Use a simple but creative story template system
-      const storyTemplates = [
-        {
-          opening: "In a world where {element1} and {element2} collide,",
-          middle: "our protagonist discovers that {element3} holds the key to",
-          climax: "overcoming the challenge of {element4}, leading to",
-          resolution: "a surprising revelation about {element5} that changes everything."
-        },
-        {
-          opening: "When {element1} meets {element2},",
-          middle: "an unexpected journey begins through {element3} where",
-          climax: "the truth about {element4} is revealed, and",
-          resolution: "our hero must use {element5} to save the day."
-        },
-        {
-          opening: "The legend speaks of {element1} and {element2},",
-          middle: "but when {element3} appears in the story,",
-          climax: "everything changes as {element4} becomes the focus, and",
-          resolution: "the power of {element5} brings hope to all."
-        }
-      ];
-
+      const templates = useComicStyle ? this.getComicTemplates() : this.getNarrativeTemplates();
+      const template = templates[Math.floor(Math.random() * templates.length)];
+      
       // Extract key elements from prompts
       const elements = prompts.length >= 5 ? prompts.slice(0, 5) : [...prompts, ...prompts, ...prompts].slice(0, 5);
-      const template = storyTemplates[Math.floor(Math.random() * storyTemplates.length)];
       
       let story = template.opening.replace('{element1}', elements[0]).replace('{element2}', elements[1]);
       story += ' ' + template.middle.replace('{element3}', elements[2]);
       story += ' ' + template.climax.replace('{element4}', elements[3]);
       story += ' ' + template.resolution.replace('{element5}', elements[4]);
 
-      // Add some creative flourishes
-      const flourishes = [
-        " The wind whispered secrets as the adventure unfolded.",
-        " Stars aligned to witness this moment of destiny.",
-        " Time seemed to slow as the pieces fell into place.",
-        " The air crackled with energy and possibility."
-      ];
+      if (characterDialogue) {
+        story += this.addDialogue(elements);
+      }
+
+      // Add visual descriptions for comic style
+      if (useComicStyle) {
+        story += this.addVisualDescriptions();
+      }
       
-      story += flourishes[Math.floor(Math.random() * flourishes.length)];
-      
-      return { story };
+      return {
+        story,
+        metadata: {
+          model: 'free-ai',
+          generatedAt: new Date().toISOString(),
+          style: useComicStyle ? 'comic' : 'narrative'
+        }
+      };
     } catch (error) {
       console.warn('Free AI story generation failed:', error);
       throw error;
@@ -229,11 +451,12 @@ export class AIStoryService {
   }
 
   /**
-   * Generate story using Hugging Face (Free - Fallback)
+   * Enhanced Hugging Face generation
    */
-  private async generateWithHuggingFace(prompts: string[]): Promise<StoryGenerationResult> {
+  private async generateWithHuggingFace(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): Promise<StoryGenerationResult> {
     try {
-      const promptText = `Write a connected, imaginative comic story using these prompts as a narrative arc. Prompts: ${prompts.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
+      const systemPrompt = this.buildSystemPrompt(useComicStyle, characterDialogue);
+      const promptText = `${systemPrompt}\n\nCreate a story using: ${prompts.join(', ')}`;
       
       const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
         method: 'POST',
@@ -257,7 +480,14 @@ export class AIStoryService {
       const data = await response.json();
       const story = Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
       
-      return { story: story.trim() };
+      return {
+        story: story.trim(),
+        metadata: {
+          model: 'huggingface',
+          generatedAt: new Date().toISOString(),
+          style: useComicStyle ? 'comic' : 'narrative'
+        }
+      };
     } catch (error) {
       console.warn('Hugging Face story generation failed:', error);
       throw error;
@@ -265,15 +495,88 @@ export class AIStoryService {
   }
 
   /**
-   * Generate a demo story when API keys aren't available
+   * Get comic-style story templates
    */
-  private generateDemoStory(prompts: string[]): StoryGenerationResult {
-    const demoStories = [
+  private getComicTemplates() {
+    return [
+      {
+        opening: "PANEL 1: In a world where {element1} collides with {element2},",
+        middle: "PANEL 2: Our hero discovers that {element3} holds the power",
+        climax: "PANEL 3: to overcome {element4} in an epic showdown that",
+        resolution: "PANEL 4: reveals the true nature of {element5}, changing everything!"
+      },
+      {
+        opening: "SPLASH PAGE: When {element1} meets {element2},",
+        middle: "SEQUENCE: an incredible journey through {element3} begins, where",
+        climax: "CLIMAX SPREAD: the mystery of {element4} unfolds, and",
+        resolution: "FINAL PANEL: {element5} becomes the key to victory!"
+      }
+    ];
+  }
+
+  /**
+   * Get narrative story templates
+   */
+  private getNarrativeTemplates() {
+    return [
+      {
+        opening: "In a realm where {element1} and {element2} intertwine,",
+        middle: "our protagonist discovers that {element3} holds the secret to",
+        climax: "overcoming the great challenge of {element4}, leading to",
+        resolution: "a profound revelation about {element5} that transforms their world."
+      },
+      {
+        opening: "The legend speaks of {element1} and {element2},",
+        middle: "but when {element3} emerges in the tale,",
+        climax: "everything changes as {element4} becomes the focal point, and",
+        resolution: "the hidden power of {element5} brings hope to all."
+      }
+    ];
+  }
+
+  /**
+   * Add dialogue to the story
+   */
+  private addDialogue(elements: string[]): string {
+    const dialogues = [
+      `\n\n"We must understand the connection between ${elements[0]} and ${elements[1]}," whispered the sage.`,
+      `\n\n"The power of ${elements[2]} is beyond anything we've seen!" exclaimed the hero.`,
+      `\n\n"But what if ${elements[3]} is not what it seems?" questioned the wise mentor.`
+    ];
+    
+    return dialogues[Math.floor(Math.random() * dialogues.length)];
+  }
+
+  /**
+   * Add visual descriptions for comic style
+   */
+  private addVisualDescriptions(): string {
+    const descriptions = [
+      "\n\nThe scene explodes with vibrant colors as magical energy swirls through the air.",
+      "\n\nDramatic shadows fall across the landscape as our heroes stand determined.",
+      "\n\nThe panel frames an epic moment frozen in time, full of motion and emotion.",
+      "\n\nBurst effects and speed lines emphasize the intensity of the action."
+    ];
+    
+    return descriptions[Math.floor(Math.random() * descriptions.length)];
+  }
+
+  /**
+   * Generate a demo story when API keys aren't available (updated)
+   */
+  private generateDemoStory(prompts: string[], useComicStyle: boolean = true, characterDialogue: boolean = false): StoryGenerationResult {
+    const demoStories = useComicStyle ? [
+      "PANEL 1: In a world where dreams and reality collide, our hero stands at the crossroads of destiny. PANEL 2: Through mystical portals and dimensional rifts, they discover ancient powers awakening. PANEL 3: Each challenge overcome reveals new mysteries in explosive detail. PANEL 4: The final revelation changes everything in a stunning climax!",
+      
+      "SPLASH PAGE: Once upon a time, in a realm beyond imagination, magic flows through every panel. SEQUENCE: The protagonist finds themselves center-stage in an ancient prophecy. CLIMAX SPREAD: With unlikely allies and powerful artifacts, they face their greatest challenge. FINAL PANEL: Victory brings hope to all!",
+      
+      "OPENING SHOT: In the heart of a bustling metropolis where technology meets wonder, an ordinary person discovers extraordinary abilities. MONTAGE: As they learn to harness their newfound powers, each panel reveals new adventures. EPIC FINALE: The hidden world of heroes welcomes its newest member!"
+    ] : [
       "In a world where dreams and reality intertwine, our hero embarks on an extraordinary journey. Through mystical landscapes and challenging trials, they discover that the power to change their destiny lies within their own courage and determination. Each step forward reveals new mysteries, each challenge overcome brings them closer to understanding their true purpose.",
       
       "Once upon a time, in a realm beyond imagination, magic flowed through every corner of existence. The protagonist found themselves at the center of an ancient prophecy, tasked with restoring balance to a world on the brink of chaos. With unlikely allies and powerful artifacts, they must navigate treacherous paths and face their deepest fears.",
       
-      "In the heart of a bustling metropolis, where technology and wonder coexist, an ordinary person discovers they possess extraordinary abilities. As they learn to harness their newfound powers, they uncover a hidden world of adventure, mystery, and purpose that will change their life forever.",
+      "In the heart of a bustling metropolis, where technology and wonder coexist, an ordinary person discovers they possess extraordinary abilities. As they learn to harness their newfound powers, they uncover a hidden world of adventure, mystery, and purpose that will change their life forever."
     ];
     
     // Select a random demo story or create one based on prompts
@@ -282,14 +585,27 @@ export class AIStoryService {
     // If we have prompts, try to incorporate them
     if (prompts.length > 0) {
       const promptSummary = prompts.slice(0, 3).join(', ');
-      story = `[DEMO MODE] This is a sample story incorporating elements like: ${promptSummary}. ${story}`;
+      const styleNote = useComicStyle ? ' (Comic Style)' : '';
+      story = `[DEMO MODE${styleNote}] This is a sample story incorporating elements like: ${promptSummary}. ${story}`;
     } else {
-      story = `[DEMO MODE] ${story}`;
+      const styleNote = useComicStyle ? ' - Comic Style' : '';
+      story = `[DEMO MODE${styleNote}] ${story}`;
+    }
+
+    if (characterDialogue) {
+      story += '\n\n"This is just the beginning of our adventure!" declared the hero with determination.';
     }
     
-    story += "\n\n✨ This is a demo story. Add valid API keys (OpenAI or Gemini) to generate custom stories based on your prompts.";
+    story += "\n\n✨ This is a demo story. Add valid API keys (OpenAI, Gemini, or OpenRouter) to generate custom stories based on your prompts.";
     
-    return { story };
+    return {
+      story,
+      metadata: {
+        model: 'demo',
+        generatedAt: new Date().toISOString(),
+        style: useComicStyle ? 'comic' : 'narrative'
+      }
+    };
   }
 }
 

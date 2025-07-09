@@ -115,30 +115,7 @@ export class AIImageService {
     return { url };
   }
 
-  /**
-   * Generate an image using Pollinations.ai (Truly Free - No API Key Required)
-   */
-  async generateWithPollinations(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
-    try {
-      // Pollinations.ai is completely free and requires no API key
-      const encodedPrompt = encodeURIComponent(options.prompt);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}`;
-      
-      // Test if the URL works by making a request
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error('Pollinations.ai generation failed');
-      }
-      
-      return {
-        url: imageUrl,
-        revisedPrompt: options.prompt
-      };
-    } catch (error) {
-      console.warn('Pollinations.ai generation failed:', error);
-      throw error;
-    }
-  }
+
 
   /**
    * Generate an image using Hugging Face (Free - Fallback)
@@ -332,17 +309,9 @@ export class AIImageService {
     const hasValidStability = stabilityKey && stabilityKey !== 'your_stability_ai_api_key_here';
     const hasValidReplicate = replicateKey && replicateKey !== 'your_replicate_api_key_here';
 
-    // Try Pollinations.ai first (Truly FREE - No API key needed!)
+    // Try Hugging Face first (FREE - No API key needed!)
     try {
-      console.log('Trying Pollinations.ai (completely free)...');
-      return await this.generateWithPollinations(options);
-    } catch (error) {
-      console.warn('Pollinations.ai generation failed, trying Hugging Face:', error);
-    }
-
-    // Try Hugging Face second (FREE but may require auth)
-    try {
-      console.log('Trying Hugging Face (free)...');
+      console.log('Trying Hugging Face (completely free)...');
       return await this.generateWithHuggingFace(options);
     } catch (error) {
       console.warn('Hugging Face generation failed, trying paid services:', error);

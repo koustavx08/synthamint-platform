@@ -60,6 +60,43 @@ SynthaMint is a cutting-edge decentralized application (dApp) that bridges the g
 - 📊 **Live Sync**: Real-time updates between collaborators
 - 🏆 **CollabMinted Events**: Smart contract analytics for collaborations
 
+## 🧠 Enhanced AI Story Generation
+
+**NEW!** SynthaMint now features a powerful multi-provider AI story generation system with support for both free and premium services:
+
+### 🆓 Free AI Services
+
+- **OpenRouter.ai**: GPT-style models (MythoMax, Mistral, OpenChat) - No API key required
+- **HuggingFace Spaces**: Community-hosted storytelling models
+- **KoboldAI United**: Creative writing and character dialogue
+- **Built-in Templates**: Smart template system with prompt incorporation
+
+### 💎 Premium AI Services
+
+- **OpenAI GPT-4**: Industry-leading story generation
+- **Google Gemini**: Advanced creative writing capabilities
+
+### 🎨 Story Features
+
+- **Comic Book Style**: Panel-based storytelling with visual descriptions
+- **Character Dialogue**: Realistic conversations and interactions
+- **Auto-Selection**: Intelligent fallback system (free → premium → demo)
+- **Metadata Tracking**: Full generation history and model information
+
+### 📖 StoryMint Enhanced
+
+Create rich, narrative-driven comic NFTs with:
+
+- Multiple panel prompts (3-6 panels supported)
+- AI model selection (auto, free, or premium)
+- Comic vs narrative style options
+- Character dialogue integration
+- Visual comic layouts
+
+> **Quick Start**: Use Auto mode to automatically try free services first, then fall back to premium APIs if needed.
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend

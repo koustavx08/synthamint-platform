@@ -15,7 +15,9 @@
     "contracts:compile": "cd contracts && npm run compile",
     "contracts:test": "cd contracts && npm run test",
     "contracts:deploy": "cd contracts && npm run deploy:fuji",
-    "setup": "npm run contracts:install && npm run contracts:compile"
+    "setup": "npm run contracts:install && npm run contracts:compile",
+    "test:ai": "node scripts/test-ai-services.js",
+    "demo:ai": "npm run test:ai"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
