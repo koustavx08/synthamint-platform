@@ -255,9 +255,19 @@ export class AIImageService {
     const replicateKey = import.meta.env.VITE_REPLICATE_API_KEY;
     const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const stabilityKey = import.meta.env.VITE_STABILITY_AI_API_KEY;
+    
+    // Check if we're in demo mode (no valid API keys)
+    const hasValidOpenAI = openaiKey && openaiKey !== 'your_openai_api_key_here';
+    const hasValidStability = stabilityKey && stabilityKey !== 'your_stability_ai_api_key_here';
+    const hasValidReplicate = replicateKey && replicateKey !== 'your_replicate_api_key_here';
+
+    // If no valid API keys, return demo placeholder
+    if (!hasValidOpenAI && !hasValidStability && !hasValidReplicate) {
+      return this.generateDemoImage(options);
+    }
 
     // Prefer Replicate for collaborative features (best for prompt blending)
-    if (replicateKey && options.collaborativePrompts) {
+    if (hasValidReplicate && options.collaborativePrompts) {
       try {
         return await this.generateWithReplicate(options);
       } catch (error) {
@@ -266,25 +276,84 @@ export class AIImageService {
     }
 
     // Try OpenAI for single prompts if available
-    if (openaiKey) {
+    if (hasValidOpenAI) {
       try {
         return await this.generateWithOpenAI(options);
       } catch (error) {
         console.warn('OpenAI generation failed, trying fallback:', error);
+        // If OpenAI fails due to quota/billing, try other services or demo
+        if (error instanceof Error && (
+          error.message.includes('quota') || 
+          error.message.includes('billing') ||
+          error.message.includes('429')
+        )) {
+          console.warn('OpenAI quota exceeded, falling back to demo mode');
+          return this.generateDemoImage(options);
+        }
       }
     }
 
     // Fallback to Stability AI
-    if (stabilityKey) {
+    if (hasValidStability) {
       try {
         return await this.generateWithStabilityAI(options);
       } catch (error) {
         console.warn('Stability AI generation failed:', error);
-        throw error;
+        return this.generateDemoImage(options);
       }
     }
 
-    throw new Error('No AI image generation service is configured. Please add API keys for Replicate, OpenAI, or Stability AI.');
+    // Final fallback to demo image
+    return this.generateDemoImage(options);
+  }
+
+  /**
+   * Generate a demo placeholder image when API keys aren't available
+   */
+  private generateDemoImage(options: ImageGenerationOptions): ImageGenerationResult {
+    // Create a simple colored rectangle as a placeholder
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Generate a gradient based on the prompt
+    const prompt = options.prompt.toLowerCase();
+    let colors = ['#6366f1', '#8b5cf6']; // Default purple gradient
+    
+    if (prompt.includes('fire') || prompt.includes('red')) colors = ['#ef4444', '#f97316'];
+    else if (prompt.includes('ocean') || prompt.includes('blue')) colors = ['#3b82f6', '#06b6d4'];
+    else if (prompt.includes('forest') || prompt.includes('green')) colors = ['#10b981', '#34d399'];
+    else if (prompt.includes('sunset') || prompt.includes('orange')) colors = ['#f59e0b', '#f97316'];
+    else if (prompt.includes('night') || prompt.includes('dark')) colors = ['#1f2937', '#374151'];
+    
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(1, colors[1]);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add some text
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('DEMO MODE', canvas.width / 2, canvas.height / 2 - 50);
+    
+    ctx.font = '24px Arial';
+    ctx.fillText('Add valid API keys to generate real images', canvas.width / 2, canvas.height / 2 + 20);
+    
+    ctx.font = '16px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    const truncatedPrompt = options.prompt.length > 50 ? options.prompt.substring(0, 50) + '...' : options.prompt;
+    ctx.fillText(`Prompt: ${truncatedPrompt}`, canvas.width / 2, canvas.height / 2 + 60);
+    
+    const dataUrl = canvas.toDataURL();
+    return {
+      url: dataUrl,
+      revisedPrompt: `Demo image for: ${options.prompt}`
+    };
   }
 
   /**
