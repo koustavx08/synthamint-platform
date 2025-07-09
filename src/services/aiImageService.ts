@@ -116,37 +116,70 @@ export class AIImageService {
   }
 
   /**
-   * Generate an image using Hugging Face (Free)
+   * Generate an image using Pollinations.ai (Truly Free - No API Key Required)
+   */
+  async generateWithPollinations(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
+    try {
+      // Pollinations.ai is completely free and requires no API key
+      const encodedPrompt = encodeURIComponent(options.prompt);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}`;
+      
+      // Test if the URL works by making a request
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error('Pollinations.ai generation failed');
+      }
+      
+      return {
+        url: imageUrl,
+        revisedPrompt: options.prompt
+      };
+    } catch (error) {
+      console.warn('Pollinations.ai generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate an image using Hugging Face (Free - Fallback)
    */
   async generateWithHuggingFace(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
     try {
-      const response = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: options.prompt,
-          parameters: {
-            num_inference_steps: 20,
-            guidance_scale: 7.5,
-            width: 1024,
-            height: 1024
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Hugging Face generation failed');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      // Try multiple free models that don't require authentication
+      const freeModels = [
+        'stabilityai/stable-diffusion-2-1',
+        'runwayml/stable-diffusion-v1-5',
+        'CompVis/stable-diffusion-v1-4'
+      ];
       
-      return {
-        url,
-        revisedPrompt: options.prompt
-      };
+      for (const model of freeModels) {
+        try {
+          const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inputs: options.prompt
+            }),
+          });
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            
+            return {
+              url,
+              revisedPrompt: options.prompt
+            };
+          }
+        } catch (modelError) {
+          console.warn(`Failed with model ${model}:`, modelError);
+          continue;
+        }
+      }
+      
+      throw new Error('All Hugging Face models failed');
     } catch (error) {
       console.warn('Hugging Face generation failed:', error);
       throw error;
@@ -299,7 +332,15 @@ export class AIImageService {
     const hasValidStability = stabilityKey && stabilityKey !== 'your_stability_ai_api_key_here';
     const hasValidReplicate = replicateKey && replicateKey !== 'your_replicate_api_key_here';
 
-    // Try Hugging Face first (FREE!)
+    // Try Pollinations.ai first (Truly FREE - No API key needed!)
+    try {
+      console.log('Trying Pollinations.ai (completely free)...');
+      return await this.generateWithPollinations(options);
+    } catch (error) {
+      console.warn('Pollinations.ai generation failed, trying Hugging Face:', error);
+    }
+
+    // Try Hugging Face second (FREE but may require auth)
     try {
       console.log('Trying Hugging Face (free)...');
       return await this.generateWithHuggingFace(options);
