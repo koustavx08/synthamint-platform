@@ -6,6 +6,7 @@ import { NFT_CONTRACT_ADDRESS, NFT_CONTRACT_ABI } from '@/config/contract';
 import { avalancheFuji } from 'viem/chains';
 import { uploadToIPFS } from '@/utils/ipfsUtils';
 
+
 interface UseNFTMintingProps {
   imageUrl: string;
   prompt: string;
@@ -14,6 +15,7 @@ interface UseNFTMintingProps {
   nftName: string;
   nftDescription: string;
   onConfigRequired: () => void;
+  extraMetadata?: Record<string, any>;
 }
 
 export const useNFTMinting = ({
@@ -24,6 +26,7 @@ export const useNFTMinting = ({
   nftName,
   nftDescription,
   onConfigRequired,
+  extraMetadata = {},
 }: UseNFTMintingProps) => {
   const [isUploading, setIsUploading] = useState(false);
   
@@ -77,6 +80,7 @@ export const useNFTMinting = ({
     console.log('Uploading to IPFS via Pinata...');
 
     try {
+
       const metadata = {
         name: nftName || 'AI Generated NFT',
         description: nftDescription || `AI generated image from prompt: "${prompt}"`,
@@ -88,8 +92,10 @@ export const useNFTMinting = ({
           {
             trait_type: 'Prompt',
             value: prompt
-          }
-        ]
+          },
+          ...(extraMetadata?.type ? [{ trait_type: 'Type', value: extraMetadata.type }] : [])
+        ],
+        ...extraMetadata,
       };
 
       const { metadataHash } = await uploadToIPFS(imageUrl, metadata, pinataApiKey, pinataSecretKey);
