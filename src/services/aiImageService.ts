@@ -30,8 +30,8 @@ export class AIImageService {
    */
   async generateWithOpenAI(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!apiKey || apiKey === 'your_openai_api_key_here') {
+      throw new Error('OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your .env file');
     }
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -67,8 +67,8 @@ export class AIImageService {
    */
   async generateWithStabilityAI(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
     const apiKey = import.meta.env.VITE_STABILITY_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Stability AI API key not configured');
+    if (!apiKey || apiKey === 'your_stability_ai_api_key_here') {
+      throw new Error('Stability AI API key not configured. Please add VITE_STABILITY_AI_API_KEY to your .env file');
     }
 
     const engineId = options.model || 'stable-diffusion-v1-6';

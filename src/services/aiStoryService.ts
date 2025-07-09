@@ -18,10 +18,13 @@ export class AIStoryService {
   }
 
   async generateStory(options: StoryGenerationOptions): Promise<StoryGenerationResult> {
-    const { prompts, model = 'gemini' } = options;
+    const { prompts, model = 'openai' } = options; // Default to OpenAI instead of Gemini
+    
     if (model === 'openai') {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey) throw new Error('OpenAI API key not configured');
+      if (!apiKey || apiKey === 'your_openai_api_key_here') {
+        throw new Error('OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your .env file');
+      }
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -46,7 +49,9 @@ export class AIStoryService {
     } else {
       // Gemini (Google AI)
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) throw new Error('Gemini API key not configured');
+      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+        throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file');
+      }
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
