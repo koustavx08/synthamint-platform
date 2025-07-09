@@ -285,9 +285,10 @@ export class AIImageService {
         if (error instanceof Error && (
           error.message.includes('quota') || 
           error.message.includes('billing') ||
-          error.message.includes('429')
+          error.message.includes('429') ||
+          error.message.includes('insufficient')
         )) {
-          console.warn('OpenAI quota exceeded, falling back to demo mode');
+          console.warn('OpenAI quota/billing issue, falling back to demo mode');
           return this.generateDemoImage(options);
         }
       }
@@ -299,6 +300,15 @@ export class AIImageService {
         return await this.generateWithStabilityAI(options);
       } catch (error) {
         console.warn('Stability AI generation failed:', error);
+        // Check for specific billing/balance errors
+        if (error instanceof Error && (
+          error.message.includes('balance') ||
+          error.message.includes('billing') ||
+          error.message.includes('insufficient') ||
+          error.message.includes('429')
+        )) {
+          console.warn('Stability AI billing/balance issue, falling back to demo mode');
+        }
         return this.generateDemoImage(options);
       }
     }

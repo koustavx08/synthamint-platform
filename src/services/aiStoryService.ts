@@ -114,8 +114,12 @@ export class AIStoryService {
       const errorData = await response.json();
       console.warn('OpenAI story generation failed:', errorData);
       
-      // If quota exceeded or rate limited, fall back to demo
-      if (response.status === 429 || errorData.error?.message?.includes('quota')) {
+      // If quota exceeded, rate limited, or billing issues, fall back to demo
+      if (response.status === 429 || 
+          errorData.error?.message?.includes('quota') ||
+          errorData.error?.message?.includes('billing') ||
+          errorData.error?.message?.includes('insufficient')) {
+        console.warn('OpenAI quota/billing issue, falling back to demo mode');
         return this.generateDemoStory(prompts);
       }
       
