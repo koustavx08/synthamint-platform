@@ -23,11 +23,16 @@ const Index = () => {
             {/* Left Content */}
             <div className="space-y-8">
               <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-gray-800/50 border border-gray-600 rounded-full px-4 py-2 backdrop-blur-sm">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                  <span className="text-gray-300 text-sm font-medium">SynthaMint Platform</span>
+                </div>
+                
                 <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
-                  Develop Your Own{" "}
+                  Synthesize Ideas{" "}
                   <span className="relative">
                     <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                      Collectible
+                      Mint the Moment
                     </span>
                     <div className="absolute -top-2 -right-8 w-12 h-8">
                       <div className="w-full h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full transform rotate-12 opacity-80"></div>
@@ -36,22 +41,50 @@ const Index = () => {
                 </h1>
                 
                 <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
-                  Your Unique Collectible Journey From
-                  <br />
-                  Concept to Creation
+                  Transform creative ideas into unique digital assets with AI-powered NFT generation on Avalanche
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   asChild 
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Link to="/solo-create" className="flex items-center gap-2">
-                    Discover Now
+                    Create AI Art
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                 </Button>
+                
+                <Button 
+                  asChild 
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-4 text-lg font-medium rounded-xl"
+                >
+                  <Link to="/collab-create" className="flex items-center gap-2">
+                    <Play className="w-5 h-5" />
+                    Collaborate
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                  <div className="text-2xl mb-2">🤖</div>
+                  <div className="text-white font-semibold text-sm">AI-Powered</div>
+                  <div className="text-gray-400 text-xs">Multiple AI providers</div>
+                </div>
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                  <div className="text-2xl mb-2">⚡</div>
+                  <div className="text-white font-semibold text-sm">Fast & Cheap</div>
+                  <div className="text-gray-400 text-xs">Avalanche network</div>
+                </div>
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                  <div className="text-2xl mb-2">🔒</div>
+                  <div className="text-white font-semibold text-sm">Decentralized</div>
+                  <div className="text-gray-400 text-xs">IPFS storage</div>
+                </div>
               </div>
 
               {/* Floating Elements */}
@@ -92,17 +125,17 @@ const Index = () => {
                   <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-700 rounded-lg px-4 py-2 border border-gray-600 shadow-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">Z</span>
+                        <span className="text-xs font-bold text-white">S</span>
                       </div>
                       <div>
-                        <div className="text-white text-sm font-medium">ZCX55IKL7</div>
+                        <div className="text-white text-sm font-medium">SynthaMint AI</div>
                         <div className="text-cyan-400 text-xs flex items-center gap-1">
                           <Sparkles className="w-3 h-3" />
-                          905 ETH
+                          0.01 AVAX
                         </div>
                       </div>
                       <Button size="sm" className="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded-md">
-                        Follow
+                        Mint
                       </Button>
                     </div>
                   </div>
@@ -112,11 +145,12 @@ const Index = () => {
                 <div className="text-center space-y-2 pt-8">
                   <div className="flex items-center justify-center gap-2">
                     <Sparkles className="w-5 h-5 text-cyan-400" />
-                    <span className="text-2xl font-bold text-white">905 ETH</span>
+                    <span className="text-2xl font-bold text-white">0.01 AVAX</span>
                   </div>
+                  <div className="text-gray-400 text-sm">Affordable NFT minting on Avalanche</div>
                   <div className="text-gray-400 text-sm">
                     Create by{" "}
-                    <span className="text-cyan-400 font-medium">89HFFL</span>
+                    <span className="text-cyan-400 font-medium">SynthaMint AI</span>
                   </div>
                 </div>
 

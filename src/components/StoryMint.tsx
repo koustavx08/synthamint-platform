@@ -128,12 +128,34 @@ const StoryMint = () => {
       <section className="relative z-10 pt-24 pb-16">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-3 bg-gray-800/50 border border-gray-600 rounded-full px-6 py-3 mb-6 backdrop-blur-sm">
+              <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+              <span className="text-gray-300 text-sm font-medium">SynthaMint Enhanced AI Story Generation</span>
+            </div>
             <h1 className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 bg-clip-text text-transparent mb-6">
-              Story Mint
+              Story Mint Studio
             </h1>
-            <p className="text-lg lg:text-xl text-gray-300 mb-12 leading-relaxed max-w-2xl mx-auto">
-              Transform narratives into visual stories and mint them as NFTs. Create engaging comic-style artwork from your imagination.
+            <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Transform your creative ideas into visual comic stories and mint them as unique NFTs. 
+              Powered by multiple AI providers for the highest quality storytelling.
             </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                <div className="text-2xl mb-2">🆓</div>
+                <div className="text-white font-semibold text-sm">Free AI Services</div>
+                <div className="text-gray-400 text-xs">OpenRouter, HuggingFace</div>
+              </div>
+              <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                <div className="text-2xl mb-2">💎</div>
+                <div className="text-white font-semibold text-sm">Premium Quality</div>
+                <div className="text-gray-400 text-xs">GPT-4, Gemini Pro</div>
+              </div>
+              <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 backdrop-blur-sm">
+                <div className="text-2xl mb-2">🎨</div>
+                <div className="text-white font-semibold text-sm">Comic Style</div>
+                <div className="text-gray-400 text-xs">Panel-based Layout</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -149,8 +171,19 @@ const StoryMint = () => {
 
           {step === 'input' && (
             <Card className="bg-gray-800/80 border border-gray-600 shadow-2xl backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
-                <CardTitle className="text-2xl font-bold">Create Your Story</CardTitle>
+              <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-black/10"></div>
+                <div className="relative">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      📖
+                    </div>
+                    Create Your Comic Story
+                  </CardTitle>
+                  <p className="text-orange-100 mt-2 text-sm">
+                    Generate panel-based stories with AI and mint them as NFTs
+                  </p>
+                </div>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
                 {/* Story prompts */}
@@ -190,17 +223,30 @@ const StoryMint = () => {
 
                 {/* AI Model Selection */}
                 <div className="space-y-4">
-                  <label className="block text-lg font-bold text-white">AI Model</label>
+                  <label className="block text-lg font-bold text-white">AI Model Selection</label>
                   <Select value={aiModel} onValueChange={(value: string) => setAiModel(value as AIModel)}>
                     <SelectTrigger className="bg-gray-700/50 border-gray-600 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="auto">Auto (Best Available)</SelectItem>
-                      <SelectItem value="openai">OpenAI GPT</SelectItem>
-                      <SelectItem value="gemini">Google Gemini</SelectItem>
+                      <SelectItem value="auto">🔀 Auto (Best Available)</SelectItem>
+                      <SelectItem value="openai">💎 OpenAI GPT-4</SelectItem>
+                      <SelectItem value="gemini">💎 Google Gemini</SelectItem>
+                      <SelectItem value="openrouter">🆓 OpenRouter (Free)</SelectItem>
+                      <SelectItem value="huggingface-spaces">🆓 HuggingFace</SelectItem>
+                      <SelectItem value="koboldai">🆓 KoboldAI</SelectItem>
                     </SelectContent>
                   </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                      <div className="text-green-400 font-semibold mb-1">🆓 Free Services</div>
+                      <div className="text-green-300">No API keys required • Community models</div>
+                    </div>
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+                      <div className="text-purple-400 font-semibold mb-1">💎 Premium Services</div>
+                      <div className="text-purple-300">API keys required • Highest quality</div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Options */}
@@ -233,7 +279,10 @@ const StoryMint = () => {
                   <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-300 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">✨</span>
-                      <span>Auto mode will try free services first (OpenRouter, HuggingFace, KoboldAI) before using premium APIs.</span>
+                      <div>
+                        <div className="font-semibold mb-1">Smart AI Selection</div>
+                        <div className="text-sm">Auto mode will try free services first (OpenRouter, HuggingFace, KoboldAI) before using premium APIs.</div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -244,7 +293,12 @@ const StoryMint = () => {
                   size="lg"
                   className="w-full h-16 text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-xl hover:shadow-2xl transition-all duration-300"
                 >
-                  🎨 Generate Enhanced Comic Story
+                  <div className="flex items-center gap-3">
+                    🎨 Generate Enhanced Comic Story
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                      Multi-AI
+                    </Badge>
+                  </div>
                 </Button>
               </CardContent>
             </Card>
