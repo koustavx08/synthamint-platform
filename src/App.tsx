@@ -8,6 +8,7 @@ import { config } from '@/config/wagmi';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { Suspense, lazy, useEffect } from 'react';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Lazy load components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -93,19 +94,22 @@ function AppContent() {
   );
 }
 
+
 const App = () => (
   <ErrorBoundary>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <ThemeProvider>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 );
 
