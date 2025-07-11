@@ -1,14 +1,16 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useStoryMint } from '@/hooks/useStoryMint';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Images, Book, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Images, Book, Sparkles, Image as ImageIcon, Search } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 
 const ComicGallery = () => {
   const { comics, isLoading, error } = useStoryMint();
   const [displayCount, setDisplayCount] = useState(12);
   const [searchTerm, setSearchTerm] = useState('');
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Memoized filtered comics
   const filteredComics = useMemo(() => {
@@ -30,82 +32,93 @@ const ComicGallery = () => {
     setDisplayCount(prev => prev + 12);
   }, []);
 
-  // Intersection Observer for infinite scroll
+  // Optimized intersection observer for infinite scroll
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && displayedComics.length < filteredComics.length) {
+        if (entries[0].isIntersecting && displayedComics.length < filteredComics.length && !isLoading) {
           loadMore();
         }
       },
-      { threshold: 0.1 }
+      { 
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
     );
 
-    const sentinel = document.getElementById('scroll-sentinel');
-    if (sentinel) observer.observe(sentinel);
+    if (sentinelRef.current && observerRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
 
-    return () => observer.disconnect();
-  }, [displayedComics.length, filteredComics.length, loadMore]);
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [displayedComics.length, filteredComics.length, loadMore, isLoading]);
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
-        <div className="text-center mb-12">
+        <header className="text-center mb-12 space-y-6">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg animate-glow">
               <Images className="w-7 h-7 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+            <h1 className="text-4xl lg:text-5xl font-bold gradient-text">
               Comic Gallery
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Explore our collection of AI-generated comic NFTs and immersive stories
           </p>
-        </div>
+        </header>
 
         {/* Search Bar */}
         <div className="max-w-md mx-auto mb-8">
-          <div className="relative">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Search comics..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              className="w-full px-4 py-3 pl-12 glass rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-200"
+              aria-label="Search comics"
             />
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
           </div>
         </div>
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center py-16">
-            <div className="relative mb-8">
+          <div className="text-center py-20">
+            <div className="relative mb-8 inline-block">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto"></div>
               <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse"></div>
             </div>
-            <div className="text-2xl font-bold text-foreground mb-2">Loading comics...</div>
-            <div className="text-lg text-muted-foreground">Fetching the latest creations ✨</div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">Loading comics...</h2>
+              <p className="text-lg text-muted-foreground">Fetching the latest creations ✨</p>
+            </div>
           </div>
         )}
 
         {/* Error State */}
         {error && (
           <div className="max-w-2xl mx-auto">
-            <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive backdrop-blur-sm">
+            <div className="p-6 glass border-destructive/20 rounded-2xl text-destructive">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-destructive/20 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-destructive/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-destructive font-bold">!</span>
                 </div>
-                <div className="font-bold text-lg">Error Loading Gallery</div>
+                <h2 className="font-bold text-lg">Error Loading Gallery</h2>
               </div>
-              <div className="text-destructive/80">{error}</div>
+              <p className="text-destructive/80">{error}</p>
             </div>
           </div>
         )}
@@ -114,8 +127,8 @@ const ComicGallery = () => {
         {!isLoading && !error && (
           <>
             {comics.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="text-center py-20">
+                <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-float">
                   <ImageIcon className="w-12 h-12 text-muted-foreground" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-3">No Comics Yet</h3>
@@ -124,7 +137,7 @@ const ComicGallery = () => {
                 </p>
               </div>
             ) : (
-              <>
+              <section aria-label="Comic gallery">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <Book className="w-6 h-6 text-primary" />
@@ -142,22 +155,22 @@ const ComicGallery = () => {
                   {displayedComics.map((comic, idx) => (
                     <Card 
                       key={comic.tokenId || idx} 
-                      className="group overflow-hidden border-2 border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
+                      className="group overflow-hidden glass hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] optimize-performance"
                     >
                       <div className="relative overflow-hidden">
                         <OptimizedImage
                           src={comic.image}
-                          alt="Comic NFT"
+                          alt={`Comic NFT: ${comic.name}`}
                           className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
                           priority={idx < 6}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="absolute top-4 right-4">
-                          <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                            Token #{comic.tokenId}
-                          </Badge>
-                        </div>
-                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        
+                        <Badge className="absolute top-4 right-4 bg-primary/90 text-primary-foreground backdrop-blur-sm">
+                          Token #{comic.tokenId}
+                        </Badge>
+                        
+                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
                           <div className="flex items-center gap-2 text-white">
                             <Sparkles className="w-4 h-4" />
                             <span className="text-sm font-medium">AI Generated</span>
@@ -165,25 +178,23 @@ const ComicGallery = () => {
                         </div>
                       </div>
                       
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1">
-                              {comic.name}
-                            </h3>
-                            <p className="text-muted-foreground text-sm line-clamp-2">
-                              {comic.description}
-                            </p>
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1">
+                            {comic.name}
+                          </h3>
+                          <p className="text-muted-foreground text-sm line-clamp-2">
+                            {comic.description}
+                          </p>
+                        </div>
+                        
+                        <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Book className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium text-foreground">Story Preview</span>
                           </div>
-                          
-                          <div className="p-4 bg-muted/30 rounded-xl border">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Book className="w-4 h-4 text-primary" />
-                              <span className="text-sm font-medium text-foreground">Story Preview</span>
-                            </div>
-                            <div className="text-sm text-muted-foreground whitespace-pre-line line-clamp-4 leading-relaxed">
-                              {comic.story}
-                            </div>
+                          <div className="text-sm text-muted-foreground whitespace-pre-line line-clamp-4 leading-relaxed">
+                            {comic.story}
                           </div>
                         </div>
                       </CardContent>
@@ -193,11 +204,15 @@ const ComicGallery = () => {
 
                 {/* Load More Sentinel */}
                 {displayedComics.length < filteredComics.length && (
-                  <div id="scroll-sentinel" className="flex justify-center py-8">
+                  <div 
+                    ref={sentinelRef}
+                    className="flex justify-center py-8"
+                    aria-hidden="true"
+                  >
                     <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary/20 border-t-primary"></div>
                   </div>
                 )}
-              </>
+              </section>
             )}
           </>
         )}
