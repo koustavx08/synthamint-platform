@@ -413,11 +413,18 @@ const CollabMode = () => {
     );
   }
 
+  // Dynamic theme classes
+  const themeBg = actualTheme === 'dark'
+    ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+    : 'bg-gradient-to-br from-white via-gray-100 to-gray-200';
+  const cardShadow = actualTheme === 'dark' ? 'shadow-2xl' : 'shadow-lg';
+  const cardBg = actualTheme === 'dark' ? 'bg-card' : 'bg-white';
+
   return (
-    <div className="space-y-8">
+    <div className={`space-y-8 ${themeBg} transition-colors duration-300`}>
       {/* Session Info */}
-      <Card className="overflow-hidden border-0 shadow-xl bg-card">
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 p-4">
+      <Card className={`overflow-hidden border-0 ${cardShadow} ${cardBg}`}>
+        <div className={`bg-gradient-to-r ${actualTheme === 'dark' ? 'from-emerald-600 to-teal-700' : 'from-emerald-500 to-teal-600'} p-4`}>
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-bold text-white text-lg">
@@ -464,8 +471,8 @@ const CollabMode = () => {
 
       {/* Prompting Phase */}
       {session?.status === 'waiting' || session?.status === 'prompting' ? (
-        <Card className="overflow-hidden border-0 shadow-xl bg-card">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 p-6">
+      <Card className={`overflow-hidden border-0 ${cardShadow} ${cardBg}`}>
+        <div className={`bg-gradient-to-r ${actualTheme === 'dark' ? 'from-blue-600 to-purple-700' : 'from-blue-500 to-purple-600'} p-6`}>
             <h4 className="text-2xl font-bold text-white">Creative Collaboration</h4>
             <p className="text-blue-100 dark:text-blue-200 mt-1">Share your creative vision</p>
           </div>
@@ -506,7 +513,7 @@ const CollabMode = () => {
 
             {/* Advanced Blending Options */}
             {canGenerate && (
-              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-blue-200 dark:border-blue-800">
+        <Card className={`bg-gradient-to-r ${actualTheme === 'dark' ? 'from-blue-950/30 to-purple-950/30' : 'from-blue-50 to-purple-50'} ${actualTheme === 'dark' ? 'border-blue-800' : 'border-blue-200'}`}>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-4">
                     <h5 className="font-semibold text-foreground flex items-center">
@@ -614,8 +621,8 @@ const CollabMode = () => {
 
       {/* Image Approval Phase */}
       {session?.generatedImage && session?.status === 'approving' && (
-        <Card className="overflow-hidden border-0 shadow-xl bg-card">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700 p-6">
+        <Card className={`overflow-hidden border-0 ${cardShadow} ${cardBg}`}>
+          <div className={`bg-gradient-to-r ${actualTheme === 'dark' ? 'from-amber-600 to-orange-700' : 'from-amber-500 to-orange-600'} p-6`}>
             <h4 className="text-2xl font-bold text-white">Review & Approve</h4>
             <p className="text-amber-100 dark:text-amber-200 mt-1">Both collaborators must approve to proceed</p>
           </div>
