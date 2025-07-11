@@ -19,15 +19,15 @@ const NavBar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+    <nav className="fixed top-0 z-50 w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 backdrop-blur-md border-b border-gray-700/50 shadow-lg">
       <div className="container mx-auto flex items-center justify-between py-4 px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="relative">
-            <Palette className="h-8 w-8 text-purple-600 transition-colors group-hover:text-purple-700" />
-            <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-blue-500 animate-pulse" />
+            <Palette className="h-8 w-8 text-purple-400 transition-colors group-hover:text-purple-500" />
+            <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-cyan-400 animate-pulse" />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
             SynthaMint
           </span>
         </Link>
@@ -39,8 +39,8 @@ const NavBar = () => {
               key={link.to}
               to={link.to}
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-900",
-                isActive(link.to) && "text-gray-900 font-semibold"
+                "px-4 py-2 text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white",
+                isActive(link.to) && "text-white font-semibold"
               )}
             >
               {link.label}
@@ -51,7 +51,7 @@ const NavBar = () => {
         {/* Desktop CTA Button */}
         <div className="hidden md:flex items-center">
           <Link to="/storymint">
-            <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-2.5 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
               Start Creating
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -64,7 +64,7 @@ const NavBar = () => {
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="relative text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
+            className="relative text-gray-300 hover:text-white hover:bg-gray-800/50"
           >
             <Menu className={cn("h-6 w-6 transition-all duration-200", isMobileMenuOpen && "rotate-90 opacity-0")} />
             <X className={cn("absolute h-6 w-6 transition-all duration-200", !isMobileMenuOpen && "-rotate-90 opacity-0")} />
@@ -74,7 +74,7 @@ const NavBar = () => {
 
       {/* Mobile Navigation Menu */}
       <div className={cn(
-        "md:hidden overflow-hidden transition-all duration-300 border-t border-gray-200/50 bg-white/95 backdrop-blur-md",
+        "md:hidden overflow-hidden transition-all duration-300 border-t border-gray-700/50 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 backdrop-blur-md",
         isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
       )}>
         <div className="container mx-auto px-6 py-4 space-y-2">
@@ -84,8 +84,8 @@ const NavBar = () => {
               to={link.to}
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
-                "block px-4 py-3 text-base font-medium transition-all duration-200 text-gray-600 hover:text-gray-900",
-                isActive(link.to) && "text-gray-900 font-semibold"
+                "block px-4 py-3 text-base font-medium transition-all duration-200 text-gray-300 hover:text-white",
+                isActive(link.to) && "text-white font-semibold"
               )}
             >
               {link.label}
@@ -93,7 +93,7 @@ const NavBar = () => {
           ))}
           <div className="pt-2">
             <Link to="/storymint" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-full font-medium shadow-lg flex items-center justify-center gap-2">
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full font-medium shadow-lg flex items-center justify-center gap-2">
                 Start Creating
                 <ArrowRight className="w-4 h-4" />
               </Button>
