@@ -46,17 +46,17 @@ const NFTMinter = ({ imageUrl, prompt }: NFTMinterProps) => {
     <>
       <div className="space-y-6">
         {/* IPFS Configuration Header */}
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
           <div className="flex justify-between items-center">
             <div>
-              <h4 className="text-lg font-semibold text-gray-800">Mint as NFT</h4>
-              <p className="text-sm text-gray-600">Create a unique token on the blockchain</p>
+              <h4 className="text-lg font-semibold text-white">Mint as NFT</h4>
+              <p className="text-sm text-gray-300">Create a unique token on the blockchain</p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowConfigModal(true)}
-              className="border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700/50"
             >
               <Settings className="w-4 h-4 mr-2" />
               {hasCredentials ? 'Update' : 'Setup'} IPFS
@@ -64,14 +64,14 @@ const NFTMinter = ({ imageUrl, prompt }: NFTMinterProps) => {
           </div>
           
           {!hasCredentials && (
-            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="mt-4 bg-amber-500/20 border border-amber-500/30 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="flex-shrink-0 w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
-                  <span className="text-amber-600 text-xs font-bold">!</span>
+                <div className="flex-shrink-0 w-5 h-5 bg-amber-500/20 rounded-full flex items-center justify-center mt-0.5">
+                  <span className="text-amber-400 text-xs font-bold">!</span>
                 </div>
                 <div>
-                  <p className="text-amber-800 text-sm font-medium">IPFS Configuration Required</p>
-                  <p className="text-amber-700 text-xs mt-1">
+                  <p className="text-amber-300 text-sm font-medium">IPFS Configuration Required</p>
+                  <p className="text-amber-200 text-xs mt-1">
                     Configure your Pinata API credentials to store your artwork on IPFS
                   </p>
                 </div>
@@ -81,9 +81,9 @@ const NFTMinter = ({ imageUrl, prompt }: NFTMinterProps) => {
         </div>
 
         {/* NFT Metadata Form */}
-        <div className="bg-white rounded-lg p-4 border border-gray-200 space-y-4">
+        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               NFT Details
             </label>
             <div className="space-y-3">
@@ -91,13 +91,13 @@ const NFTMinter = ({ imageUrl, prompt }: NFTMinterProps) => {
                 placeholder="Enter NFT name (optional)"
                 value={nftName}
                 onChange={(e) => setNftName(e.target.value)}
-                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20"
               />
               <Input
                 placeholder="Enter NFT description (optional)"
                 value={nftDescription}
                 onChange={(e) => setNftDescription(e.target.value)}
-                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20"
               />
             </div>
           </div>
@@ -119,7 +119,7 @@ const NFTMinter = ({ imageUrl, prompt }: NFTMinterProps) => {
           </Button>
           
           {hash && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
               <TransactionHash hash={hash} />
             </div>
           )}

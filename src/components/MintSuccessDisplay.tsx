@@ -4,7 +4,7 @@ import { CheckCircle, Sparkles } from 'lucide-react';
 
 const MintSuccessDisplay = () => {
   return (
-    <Card className="overflow-hidden border-0 shadow-xl bg-white">
+    <Card className="overflow-hidden border-0 shadow-xl bg-gray-800/50 border-gray-600">
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6">
         <div className="text-center">
           <CheckCircle className="w-16 h-16 mx-auto mb-4 text-white" />
@@ -14,9 +14,9 @@ const MintSuccessDisplay = () => {
       </div>
       
       <div className="p-6 text-center space-y-4">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <h4 className="text-green-800 font-semibold text-lg mb-2">🎉 Congratulations!</h4>
-          <p className="text-green-700 text-sm">
+        <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4">
+          <h4 className="text-green-400 font-semibold text-lg mb-2">🎉 Congratulations!</h4>
+          <p className="text-green-300 text-sm">
             Your AI-generated artwork has been successfully minted as an NFT and added to your wallet.
           </p>
         </div>

@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WagmiProvider } from 'wagmi';
 import { config } from '@/config/wagmi';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { Suspense, lazy, useEffect } from 'react';
@@ -21,13 +20,13 @@ const NavBar = lazy(() => import("./components/NavBar"));
 
 // Fallback component for loading states
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
+  <div className="min-h-screen flex items-center justify-center bg-gray-900">
     <div className="text-center space-y-4">
       <div className="relative">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto"></div>
-        <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-500/20 border-t-purple-500 mx-auto"></div>
+        <div className="absolute inset-0 rounded-full bg-purple-500/10 animate-pulse"></div>
       </div>
-      <div className="text-lg font-medium text-muted-foreground">Loading...</div>
+      <div className="text-lg font-medium text-gray-300">Loading...</div>
     </div>
   </div>
 );
@@ -54,7 +53,7 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-900 transition-colors duration-300">
       <Suspense fallback={<LoadingFallback />}>
         <NavBar />
         <Routes>
@@ -96,19 +95,17 @@ function AppContent() {
 
 const App = () => (
   <ErrorBoundary>
-    <ThemeProvider>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </ThemeProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   </ErrorBoundary>
 );
 

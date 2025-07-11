@@ -92,12 +92,12 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
   return (
     <div className="space-y-8">
       {/* AI Image Generation Card */}
-      <Card className="overflow-hidden border shadow-2xl bg-card/50 backdrop-blur-sm">
-        <div className="bg-gradient-to-r from-primary via-primary to-accent p-8">
+      <Card className="overflow-hidden border border-gray-600 shadow-2xl bg-gray-800/50 backdrop-blur-sm">
+        <div className="bg-gradient-to-r from-purple-600 via-purple-600 to-blue-600 p-8">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-3xl font-bold text-primary-foreground mb-2">AI Art Generator</h3>
-              <p className="text-primary-foreground/80 text-lg">Create unique artwork with artificial intelligence</p>
+              <h3 className="text-3xl font-bold text-white mb-2">AI Art Generator</h3>
+              <p className="text-purple-100 text-lg">Create unique artwork with artificial intelligence</p>
             </div>
             {availableServices.length > 0 && (
               <div className="flex items-center gap-3 bg-green-500/20 text-green-100 px-4 py-2 rounded-full border border-green-400/30">
@@ -110,25 +110,25 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
         
         <div className="p-8 space-y-8">
           {availableServices.length === 0 && (
-            <div className="bg-amber-500/10 border border-amber-200 dark:border-amber-400/30 rounded-2xl p-6">
+            <div className="bg-amber-500/10 border border-amber-400/30 rounded-2xl p-6">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 dark:bg-amber-400/20 rounded-full flex items-center justify-center">
-                  <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>
+                <div className="flex-shrink-0 w-8 h-8 bg-amber-400/20 rounded-full flex items-center justify-center">
+                  <span className="text-amber-400 font-bold">!</span>
                 </div>
                 <div>
-                  <h4 className="text-amber-800 dark:text-amber-300 font-bold mb-2">Configuration Required</h4>
-                  <p className="text-amber-700 dark:text-amber-200 mb-3">
+                  <h4 className="text-amber-300 font-bold mb-2">Configuration Required</h4>
+                  <p className="text-amber-200 mb-3">
                     Add your AI service API keys to enable image generation:
                   </p>
-                  <ul className="text-amber-600 dark:text-amber-300 space-y-2">
+                  <ul className="text-amber-300 space-y-2">
                     <li className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <code className="bg-amber-100 dark:bg-amber-400/20 px-2 py-1 rounded font-mono text-sm">VITE_OPENAI_API_KEY</code> 
+                      <code className="bg-amber-400/20 px-2 py-1 rounded font-mono text-sm">VITE_OPENAI_API_KEY</code> 
                       <span>for DALL-E</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <code className="bg-amber-100 dark:bg-amber-400/20 px-2 py-1 rounded font-mono text-sm">VITE_STABILITY_AI_API_KEY</code> 
+                      <code className="bg-amber-400/20 px-2 py-1 rounded font-mono text-sm">VITE_STABILITY_AI_API_KEY</code> 
                       <span>for Stable Diffusion</span>
                     </li>
                   </ul>
@@ -138,17 +138,17 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
           )}
           
           <div className="space-y-4">
-            <label className="block text-lg font-bold text-foreground">
+            <label className="block text-lg font-bold text-white">
               Describe your artwork
             </label>
             <Input
               placeholder="A majestic dragon soaring through a starlit sky with ethereal clouds..."
               value={imagePrompt}
               onChange={(e) => setImagePrompt(e.target.value)}
-              className="h-14 text-base border-2 bg-background/50 backdrop-blur-sm focus:border-primary focus:ring-primary/20 transition-all duration-200"
+              className="h-14 text-base border-2 border-gray-600 bg-gray-700/50 backdrop-blur-sm focus:border-purple-500 focus:ring-purple-500/20 transition-all duration-200 text-white placeholder-gray-400"
               disabled={isGenerating}
             />
-            <p className="text-muted-foreground">
+            <p className="text-gray-300">
               Be descriptive and creative - the more detail, the better your AI artwork will be! ✨
             </p>
           </div>
@@ -157,7 +157,7 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
             onClick={generateImage}
             disabled={isGenerating || !imagePrompt.trim() || availableServices.length === 0}
             size="lg"
-            className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-lg relative overflow-hidden group"
+            className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-lg relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
             {isGenerating ? (
@@ -177,7 +177,7 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
 
       {/* Generated Image Display */}
       {generatedImage && (
-        <Card className="overflow-hidden border shadow-2xl bg-card/50 backdrop-blur-sm animate-float">
+        <Card className="overflow-hidden border border-gray-600 shadow-2xl bg-gray-800/50 backdrop-blur-sm animate-float">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-8">
             <h3 className="text-3xl font-bold text-white mb-2">Your AI Masterpiece</h3>
             <p className="text-emerald-100 text-lg">Ready to mint as a unique NFT</p>
@@ -186,31 +186,31 @@ const ImageGenerator = ({ generatedImage, setGeneratedImage, imagePrompt, setIma
           <div className="p-8 space-y-8">
             <div className="flex justify-center">
               <div className="relative group max-w-2xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-300 animate-glow"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-300 animate-glow"></div>
                 <img
                   src={generatedImage}
                   alt="Generated AI artwork"
-                  className="relative w-full rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02] border-2 border-border"
+                  className="relative w-full rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02] border-2 border-gray-600"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
             
             {isConnected ? (
-              <div className="bg-accent/30 backdrop-blur-sm rounded-2xl p-2 border">
+              <div className="bg-gray-700/30 backdrop-blur-sm rounded-2xl p-2 border border-gray-600">
                 <NFTMinter 
                   imageUrl={generatedImage}
                   prompt={imagePrompt}
                 />
               </div>
             ) : (
-              <div className="text-center py-12 bg-gradient-to-r from-card via-card to-accent/10 rounded-2xl border border-border/50 backdrop-blur-sm">
+              <div className="text-center py-12 bg-gradient-to-r from-gray-800 via-gray-800 to-gray-700/50 rounded-2xl border border-gray-600 backdrop-blur-sm">
                 <div className="max-w-sm mx-auto">
-                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                    <Users className="w-10 h-10 text-primary" />
+                  <div className="w-20 h-20 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <Users className="w-10 h-10 text-purple-400" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground mb-3">Connect Your Wallet</h4>
-                  <p className="text-muted-foreground text-lg">
+                  <h4 className="text-2xl font-bold text-white mb-3">Connect Your Wallet</h4>
+                  <p className="text-gray-300 text-lg">
                     Connect your crypto wallet to mint this artwork as an NFT and add it to your collection.
                   </p>
                 </div>
