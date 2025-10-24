@@ -353,6 +353,21 @@ We welcome contributions! Please follow these steps:
 - Update documentation as needed
 - Ensure all tests pass before submitting PR
 
+---
+
+
+## ✨ Contributors
+
+#### Thanks to all the wonderful contributors 💖
+
+<a href="https://github.com/koustavx08/synthamint-platform/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=koustavx08/synthamint-platform" />
+</a>
+
+#### See full list of contributor contribution [Contribution Graph](https://github.com/koustavx08/synthamint-platform/graphs/contributors)  
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
